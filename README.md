@@ -1,7 +1,8 @@
 # SearchLingo
 
 SearchLingo is a framework for defining simple, user-friendly query languages
-and translating them into their underlying queries.
+and translating them into their underlying queries. It does not perform the
+searches themselves.
 
 Although designed originally to be used with simple searches using ActiveRecord
 models, there is no dependency on ActiveRecord or Rails. The search classes you
@@ -29,6 +30,10 @@ Or install it yourself as:
 ## Usage
 
 TODO: Write usage instructions here
+
+## Search Classes
+
+## Parsers
 
 ## Tokenization
 

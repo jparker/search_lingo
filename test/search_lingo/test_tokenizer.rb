@@ -30,11 +30,18 @@ module SearchLingo
         tokenizer.to_a
     end
 
+    def test_tokenizer_does_not_choke_on_superfluous_spaces
+      tokenizer = Tokenizer.new '  foo    bar  '
+      assert_equal 'foo', tokenizer.next
+      assert_equal 'bar', tokenizer.next
+      assert_raises(StopIteration) { tokenizer.next }
+    end
+
     def test_reset
       tokenizer = Tokenizer.new 'foo'
 
       assert_equal 'foo', tokenizer.next
-      assert_nil tokenizer.next
+      assert_raises(StopIteration) { tokenizer.next }
 
       tokenizer.reset
 
@@ -56,7 +63,7 @@ module SearchLingo
     def test_simplify_rewinds_the_scanner
       tokenizer = Tokenizer.new('foo: "bar baz"')
       assert_equal 'foo: bar baz', tokenizer.next
-      assert_nil tokenizer.next
+      assert_raises(StopIteration) { tokenizer.next }
 
       tokenizer.reset
 

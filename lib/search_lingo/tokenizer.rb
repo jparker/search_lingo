@@ -6,34 +6,33 @@ module SearchLingo
     include Enumerable
     extend Forwardable
 
-    SIMPLE    = %r{ "[^"]*" | [[:graph:]]+ }x
-    COMPOUND  = %r{ (?:[[:graph:]]+:[[:space:]]*)? #{SIMPLE} }x
-    DELIMITER = %r{ [[:space:]]* }x
+    SIMPLE    = %r{"[^"]*"|[[:graph:]]+}
+    COMPOUND  = %r{(?:[[:graph:]]+:[[:space:]]*)?#{SIMPLE}}
+    DELIMITER = %r{[[:space:]]*}
 
     def initialize(query)
       @scanner = StringScanner.new query.strip
     end
 
-    def_delegator :scanner, :reset
-
-    def each
-      until scanner.eos?
-        token = scanner.scan COMPOUND
-        token.sub! /"([^"]*)"\Z/, '\1'
-        yield token
-        scanner.skip DELIMITER
+    def enum
+      Enumerator.new do |yielder|
+        until scanner.eos?
+          token = scanner.scan COMPOUND
+          if token
+            token.sub! /"([^"]*)"\Z/, '\1'
+            yielder << token
+          end
+          scanner.skip DELIMITER
+        end
       end
     end
 
-    def next
-      take(1).first
-    end
+    def_delegator :scanner, :reset
+    def_delegators :enum, :each, :next
 
     def simplify
       scanner.unscan
-      scanner.scan(SIMPLE).tap do
-        scanner.skip DELIMITER
-      end
+      scanner.scan(SIMPLE).tap { scanner.skip DELIMITER }
     end
 
     private
