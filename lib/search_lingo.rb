@@ -1,5 +1,2 @@
-require "search_lingo/version"
-
-module SearchLingo
-  # Your code goes here...
-end
+require 'search_lingo/version'
+require 'search_lingo/tokenizer'
