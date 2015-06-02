@@ -39,7 +39,7 @@ module SearchLingo
       tokenizer.inject([]) do |conditions, token|
         conditions << catch(:match) do
           parse token
-          token.match /\A\S+:\s*/ do
+          if token.compound?
             token = tokenizer.simplify
             parse token
           end

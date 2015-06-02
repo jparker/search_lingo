@@ -78,7 +78,7 @@ module SearchLingo
     def test_conditions_when_token_falls_through_to_default_parser
       cls = Class.new AbstractSearch do
         def default_parse(token)
-          [:foo, token]
+          [:foo, token.term]
         end
       end
       search = cls.new('foo', :scope)
@@ -109,21 +109,21 @@ module SearchLingo
     def test_conditions_when_compound_token_is_simplified
       cls = Class.new AbstractSearch do
         def default_parse(token)
-          [:foo, token]
+          [:where, token.term]
         end
       end
       search = cls.new('foo: bar', :scope)
 
-      assert_equal [[:foo, 'foo:'], [:foo, 'bar']], search.conditions
+      assert_equal [[:where, 'foo:'], [:where, 'bar']], search.conditions
     end
 
     def test_results_sends_conditions_to_scope
       cls = Class.new AbstractSearch
-      cls.parser { |token| [token.to_sym] }
+      cls.parser { |token| [:where, token.term] }
 
       scope = Minitest::Mock.new
-      scope.expect(:foo, scope, [])
-      scope.expect(:bar, scope, [])
+      scope.expect(:where, scope, ['foo'])
+      scope.expect(:where, scope, ['bar'])
 
       cls.new('foo bar', scope).results
 

@@ -10,24 +10,22 @@ module SearchLingo
 
     def test_multiword_simple_tokens
       tokenizer = Tokenizer.new '"foo bar" "baz froz"'
-      assert_equal ['foo bar', 'baz froz'], tokenizer.to_a
+      assert_equal ['"foo bar"', '"baz froz"'], tokenizer.to_a
     end
 
     def test_compound_tokens
       tokenizer = Tokenizer.new 'foo: bar baz: "froz quux"'
-      assert_equal ['foo: bar', 'baz: froz quux'], tokenizer.to_a
+      assert_equal ['foo: bar', 'baz: "froz quux"'], tokenizer.to_a
     end
 
     def test_compound_tokens_without_space_after_operator
       tokenizer = Tokenizer.new 'foo:bar baz:"froz quux"'
-      assert_equal ['foo:bar', 'baz:froz quux'], tokenizer.to_a
+      assert_equal ['foo:bar', 'baz:"froz quux"'], tokenizer.to_a
     end
 
     def test_wide_variety_of_tokens
-      tokenizer = Tokenizer.new \
-        'foo bar: baz "froz quux" fribble: "dibble bibble"'
-      assert_equal ['foo', 'bar: baz', 'froz quux', 'fribble: dibble bibble'],
-        tokenizer.to_a
+      tokenizer = Tokenizer.new 'a b: c "d e" f: "g h"'
+      assert_equal ['a', 'b: c', '"d e"', 'f: "g h"'], tokenizer.to_a
     end
 
     def test_tokenizer_does_not_choke_on_superfluous_spaces
@@ -62,14 +60,14 @@ module SearchLingo
 
     def test_simplify_rewinds_the_scanner
       tokenizer = Tokenizer.new('foo: "bar baz"')
-      assert_equal 'foo: bar baz', tokenizer.next
+      assert_equal 'foo: "bar baz"', tokenizer.next
       assert_raises(StopIteration) { tokenizer.next }
 
       tokenizer.reset
 
-      assert_equal 'foo: bar baz', tokenizer.next
+      assert_equal 'foo: "bar baz"', tokenizer.next
       assert_equal 'foo:', tokenizer.simplify
-      assert_equal 'bar baz', tokenizer.next
+      assert_equal '"bar baz"', tokenizer.next
     end
   end
 end

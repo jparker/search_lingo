@@ -1,5 +1,6 @@
 require 'forwardable'
 require 'strscan'
+require 'search_lingo/token'
 
 module SearchLingo
   class Tokenizer
@@ -19,8 +20,7 @@ module SearchLingo
         until scanner.eos?
           token = scanner.scan COMPOUND
           if token
-            token.sub! /"([^"]*)"\Z/, '\1'
-            yielder << token
+            yielder << Token.new(token)
           end
           scanner.skip DELIMITER
         end
@@ -32,7 +32,9 @@ module SearchLingo
 
     def simplify
       scanner.unscan
-      scanner.scan(SIMPLE).tap { scanner.skip DELIMITER }
+      Token.new(scanner.scan(SIMPLE)).tap do
+        scanner.skip DELIMITER
+      end
     end
 
     private
