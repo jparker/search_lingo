@@ -8,6 +8,11 @@ module SearchLingo
       assert_equal 'foo', search.query
     end
 
+    def test_query_is_converted_to_empty_string_if_nil
+      search = AbstractSearch.new nil, :scope
+      assert_equal '', search.query
+    end
+
     def test_scope_reader
       search = AbstractSearch.new '', :scope
       assert_equal :scope, search.scope

@@ -3,9 +3,9 @@ require 'search_lingo/tokenizer'
 module SearchLingo
   class AbstractSearch
     def initialize(query, scope, tokenizer: Tokenizer)
-      @query = query
+      @query = query || ''
       @scope = scope
-      @tokenizer = tokenizer.new query
+      @tokenizer = tokenizer.new @query
     end
 
     attr_reader :query, :scope, :tokenizer
