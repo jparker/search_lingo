@@ -5,10 +5,12 @@ module SearchLingo
     class DateParser
       include MDY
 
-      def initialize(table, column, operator = nil)
+      def initialize(table, column, operator = nil, **options)
         @table    = table
         @column   = column
         @prefix   = %r{#{operator}:\s*} if operator
+
+        post_initialize **options
       end
 
       attr_reader :table, :column, :prefix
@@ -18,6 +20,9 @@ module SearchLingo
           date = parse m[:date]
           [:where, { table => { column => date } }] if date
         end
+      end
+
+      def post_initialize(**)
       end
     end
   end
