@@ -6,7 +6,7 @@ module SearchLingo
       US_DATE = %r{(?<m>\d{1,2})/(?<d>\d{1,2})(?:/(?<y>\d{2}\d{2}?))?}
 
       def parse(term, relative_to: Date.today)
-        term.match /\A#{US_DATE}\Z/ do |m|
+        term.match /\A#{US_DATE}\z/ do |m|
           return Date.parse "#{m[:y]}/#{m[:m]}/#{m[:d]}" if m[:y]
 
           day   = Integer(m[:d])

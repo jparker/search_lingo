@@ -13,7 +13,7 @@ module Parsers
     end
 
     def call(token)
-      token.match /\Aid:\s*([[:digit:]]+)\Z/ do |m|
+      token.match /\Aid:\s*([[:digit:]]+)\z/ do |m|
         [:where, { @table => { id: m[1] } }]
       end
     end
@@ -59,7 +59,7 @@ class ReceiptSearch < AbstractSearch
     :post_date, 'posted', connection: Receipt.connection
 
   parser do |token|
-    token.match /\Aamount: (\d+(?:\.\d+)?)\Z/ do |m|
+    token.match /\Aamount: (\d+(?:\.\d+)?)\z/ do |m|
       [:where, { receipts: { amount: m[1] } }]
     end
   end

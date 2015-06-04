@@ -16,7 +16,7 @@ module SearchLingo
       attr_reader :table, :column, :prefix
 
       def call(token)
-        token.match /\A#{prefix}(?<date>#{US_DATE})\Z/ do |m|
+        token.match /\A#{prefix}(?<date>#{US_DATE})\z/ do |m|
           date = parse m[:date]
           [:where, { table => { column => date } }] if date
         end

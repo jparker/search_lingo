@@ -7,7 +7,7 @@ module SearchLingo
       extend Forwardable
 
       def call(token)
-        token.match /\A#{prefix}-(?<date>#{US_DATE})\Z/ do |m|
+        token.match /\A#{prefix}-(?<date>#{US_DATE})\z/ do |m|
           date = parse m[:date]
           if date
             [:where, "#{quote_table_name table}.#{quote_column_name column} <= ?", date]

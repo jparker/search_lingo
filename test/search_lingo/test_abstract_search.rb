@@ -93,8 +93,8 @@ module SearchLingo
 
     def test_conditions_with_multiple_parsers
       cls = Class.new AbstractSearch
-      cls.parser { |token| token.match(/\A(foo)\Z/) { |m| [:foo, m[1]] } }
-      cls.parser { |token| token.match(/\A(bar)\Z/) { |m| [:bar, m[1]] } }
+      cls.parser { |token| token.match(/\A(foo)\z/) { |m| [:foo, m[1]] } }
+      cls.parser { |token| token.match(/\A(bar)\z/) { |m| [:bar, m[1]] } }
       search = cls.new('foo bar', :scope)
 
       assert_equal [[:foo, 'foo'], [:bar, 'bar']], search.conditions
@@ -106,7 +106,7 @@ module SearchLingo
           raise '#default_parse should not have been reached'
         end
       end
-      cls.parser { |token| token.match(/\Afoo:\s*(.*)\Z/) { |m| [:foo, m[1]] } }
+      cls.parser { |token| token.match(/\Afoo:\s*(.*)\z/) { |m| [:foo, m[1]] } }
 
       assert_equal [[:foo, 'bar']], cls.new('foo: bar', :scope).conditions
     end

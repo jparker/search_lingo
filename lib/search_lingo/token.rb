@@ -2,7 +2,7 @@ require 'delegate'
 
 module SearchLingo
   class Token < DelegateClass(String)
-    FORMAT = %r{\A(?:(\S+):\s*)?"?(.+?)"?\Z}
+    FORMAT = %r{\A(?:(\S+):\s*)?"?(.+?)"?\z}
 
     def operator
       self[FORMAT, 1]

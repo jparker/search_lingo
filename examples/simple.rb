@@ -13,7 +13,7 @@ class TaskSearch < SearchLingo::AbstractSearch
     :due_date, connection: ActiveRecord::Base.connection
 
   parser do |token|
-    token.match /\Aid:\s*([[:digit:]]+)\Z/ do |m|
+    token.match /\Aid:\s*([[:digit:]]+)\z/ do |m|
       [:where, { tasks: { id: m[1] } }]
     end
   end

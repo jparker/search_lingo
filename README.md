@@ -78,7 +78,7 @@ parsing logic to the <code>parser</code> method as a block:
 
     class MySearch < SearchLingo::AbstractSearch
       parser do |token|
-        token.match /\Aid:[[:space:]]*([[:digit:]]+)\Z/ do |m|
+        token.match /\Aid:[[:space:]]*([[:digit:]]+)\z/ do |m|
           [:where, { id: m[1] }]
         end
       end
@@ -88,7 +88,7 @@ Parsers can also be implemented as lambdas:
 
     module Parsers
       ID_PARSER = lambda do |token|
-        token.match h/\Aid:[[:space:]]*([[:digit:]]+)\Z/ do |m|
+        token.match h/\Aid:[[:space:]]*([[:digit:]]+)\z/ do |m|
           [:where, { id: m[1] }]
         end
       end
@@ -113,7 +113,7 @@ classes:
         end
 
         def call(token)
-          token.match /\A#{@prefix}([[:digit:]]+)\Z do |m|
+          token.match /\A#{@prefix}([[:digit:]]+)\z/ do |m|
             [:where, { @table => { id: m[1] } }]
           end
         end
