@@ -3,15 +3,15 @@
 SearchLingo is a framework for defining simple, user-friendly query languages
 and translating them into their underlying queries.
 
-Although designed originally to be used with simple searches using ActiveRecord
-models, there is no dependency on ActiveRecord or Rails. The search classes you
-define will provide the query object (commonly an ActiveRecord model or an
-ActiveRecord::Relation), and the parsers you define will describe what messages
-to send to the query object (typically things like <code>where</code> or a
-named scope) to perform the search.
+It was originally designed after I found myself implementing the same basic
+query parsing over and over again across different projects. I wanted a way to
+simplify the process without having to worry about application-specific aspects
+of searching.
 
-In theory, you should be able to write parsers to translate into queries for
-non-ActiveRecord data stores.
+The way the searches themselves are performed lies outside the scope of this
+project. Although originally designed to work with basic searching with
+ActiveRecord models, it should be usable with other data stores provided they
+let you chain queries together onto a single object.
 
 ## Installation
 
@@ -41,18 +41,39 @@ the search and return the results.
 
 Take a look at the examples/ directory for more concrete examples.
 
+## How It Works
+
+A search is instantiated with a query string and a search scope (commonly an
+ActiveRecord model). The search breaks the query string down into a series of
+tokens, and each token is processed by a declared series of parsers. If a
+parser succeeds, the process immediately terminates and advances to the next
+token. If none of the declared parsers succeeds, and the token is compound --
+that is, the token is composed of an operator and a term (e.g., "foo: bar"),
+the token is simplified and then processed by the declared parsers again. If
+the second pass also fails, then the (now simplified) token falls through to
+the <code>#default_parse</code> method defined by the search class. (It is
+important that this method be implemented in such a way that it always
+succeeds.)
+
 ## Search Classes
 
 Search classes should inherit from SearchLingo::AbstractSearch and they should
-override the <code>#default_parse</code> instance method. In addtion, the class
-method <code>parser</code> can be used to declare additional parsers that
+override the <code>#default_parse</code> instance method. It is important that
+this method be defined in such a way that it always succeeds, as the results
+will be sent to the query object via <code>#public_send</code>. In addtion, the
+class method <code>parser</code> can be used to declare additional parsers that
 should be used by the search class. (See the section "Parsing" for more
 information on what makes a suitable parser.)
 
 ## Parsers
 
 Any object that can respond to the <code>#call</code> method can be used as a
-parser. For very simple parsers which need not be reusable, you can pass the
+parser. If the parser succeeds, it should return an Array of arguments that can
+be sent to the query object using <code>#public_send</code>, e.g.,
+<code>[:where, { id: 42 }]</code>. If the parser fails, it should return a
+falsey value (typically nil).
+
+For very simple parsers which need not be reusable, you can pass the
 parsing logic to the <code>parser</code> method as a block:
 
     class MySearch < SearchLingo::AbstractSearch
@@ -135,8 +156,6 @@ Operators can be things like:
 
 (If you want to perform a query with a term that could potentially be parsed as
 an operator, you would place the term in quotes, i.e., "foo:".)
-
-TODO: Explain the tokenization process in greater detail.
 
 ## Development
 
