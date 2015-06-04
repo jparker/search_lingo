@@ -27,7 +27,7 @@ module SearchLingo
 
       def inspect
         '#<%s:0x%x @table=%s @column=%s @prefix=%s>' %
-          [self.class, object_id << 1, table, column, prefix]
+          [self.class, object_id << 1, table.inspect, column.inspect, prefix.inspect]
       end
     end
   end
