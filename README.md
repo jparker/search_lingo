@@ -1,15 +1,17 @@
 # SearchLingo
 
 SearchLingo is a framework for defining simple, user-friendly query languages
-and translating them into their underlying queries. It does not perform the
-searches themselves.
+and translating them into their underlying queries.
 
 Although designed originally to be used with simple searches using ActiveRecord
 models, there is no dependency on ActiveRecord or Rails. The search classes you
 define will provide the query object (commonly an ActiveRecord model or an
 ActiveRecord::Relation), and the parsers you define will describe what messages
-to send to the query object (typically things like <code>#where</code> or a
+to send to the query object (typically things like <code>where</code> or a
 named scope) to perform the search.
+
+In theory, you should be able to write parsers to translate into queries for
+non-ActiveRecord data stores.
 
 ## Installation
 
@@ -29,11 +31,82 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Create a class which inherits from SearchLingo::AbstractSearch. Provide an
+implementation of <code>#default_parse</code> in that class. Register parsers
+for specific types of search tokens using the <code>parser</code> class method.
+
+Instantiate your search class by passing in the query string and the scope on
+which to perform the search. Use the <code>#results</code> method to compile
+the search and return the results.
+
+Take a look at the examples/ directory for more concrete examples.
 
 ## Search Classes
 
+Search classes should inherit from SearchLingo::AbstractSearch and they should
+override the <code>#default_parse</code> instance method. In addtion, the class
+method <code>parser</code> can be used to declare additional parsers that
+should be used by the search class. (See the section "Parsing" for more
+information on what makes a suitable parser.)
+
 ## Parsers
+
+Any object that can respond to the <code>#call</code> method can be used as a
+parser. For very simple parsers which need not be reusable, you can pass the
+parsing logic to the <code>parser</code> method as a block:
+
+    class MySearch < SearchLingo::AbstractSearch
+      parser do |token|
+        token.match /\Aid:[[:space:]]*([[:digit:]]+)\Z/ do |m|
+          [:where, { id: m[1] }]
+        end
+      end
+    end
+
+Parsers can also be implemented as lambdas:
+
+    module Parsers
+      ID_PARSER = lambda do |token|
+        token.match h/\Aid:[[:space:]]*([[:digit:]]+)\Z/ do |m|
+          [:where, { id: m[1] }]
+        end
+      end
+    end
+
+    class MySearch < SearchLingo::AbstractSearch
+      parser Parsers::ID_PARSER
+    end
+
+    class MyOtherSearch < SearchLingo::AbstractSearch
+      parser Parsers::ID_PARSER
+    end
+
+Finally, for the most complicated cases, you could implement parsers as
+classes:
+
+    module Parsers
+      class IdParser
+        def initialize(table, operator = nil)
+          @table = table
+          @prefix = /#{operator}:\s*/ if operator
+        end
+
+        def call(token)
+          token.match /\A#{@prefix}([[:digit:]]+)\Z do |m|
+            [:where, { @table => { id: m[1] } }]
+          end
+        end
+      end
+    end
+
+    class EventSearch < SearchLingo::AbstractSearch
+      parser Parsers::IdParser.new :events                 # => match "42"
+      parser Parsers::IdParser.new :categories, 'category' # => match "category: 42"
+    end
+
+    class CategorySearch < SearchLingo::AbstractSearch
+      parser Parsers::IdParser.new :categories
+    end
 
 ## Tokenization
 
@@ -62,6 +135,8 @@ Operators can be things like:
 
 (If you want to perform a query with a term that could potentially be parsed as
 an operator, you would place the term in quotes, i.e., "foo:".)
+
+TODO: Explain the tokenization process in greater detail.
 
 ## Development
 
