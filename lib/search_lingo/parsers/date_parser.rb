@@ -24,6 +24,11 @@ module SearchLingo
 
       def post_initialize(**)
       end
+
+      def inspect
+        '#<%s:0x%x @table=%s @column=%s @prefix=%s>' %
+          [self.class, object_id << 1, table, column, prefix]
+      end
     end
   end
 end
