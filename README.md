@@ -106,21 +106,53 @@ succeeds.)
 
 ## Search Classes
 
-Search classes should inherit from SearchLingo::AbstractSearch and they should
-override the <code>#default_parse</code> instance method. It is important that
-this method be defined in such a way that it always succeeds, as the results
-will be sent to the query object via <code>#public_send</code>. In addtion, the
-class method <code>parser</code> can be used to declare additional parsers that
-should be used by the search class. (See the section "Parsing" for more
-information on what makes a suitable parser.)
+Search classes should inherit from SearchLogic::AbstractSearch, and they must
+provide their own implementation of #default_parse. Optionally, a search class
+may also use the parse class method to add specialized parsers for handling
+tokens that match specific patterns. As each token is processed, the search
+class will first run through the specialized parsers. If none of them succeed,
+it will fall back on the #default_parse method. See the section "Parsing" for
+more information on how parsers work and how they should be structured.
+
+## Tokenization
+
+Queries are comprised of zero or more tokens separated by white space. A token
+has a term and an optional operator. (A simple token has no operator; a
+compound token does.) A term can be a single word or multiple words joined by
+spaces and contained within double quotes. For example <code>foo</code> and
+<code>"foo bar baz"</code> are both single terms. An operator is one or more
+printable (non-space) characters, and it is separated from the term by a colon
+and zero or more spaces.
+
+    QUERY    := TOKEN*
+    TOKEN    := (OPERATOR ':' [[:space:]]*)? TERM
+    OPERATOR := [[:graph:]]+
+    TERM     := '"' [^"]* '"' | [[:graph:]]+
+
+The following are all examples of tokens:
+
+* <code>foo</code>
+* <code>"foo bar"</code>
+* <code>foo: bar</code>
+* <code>foo: "bar baz"</code>
+
+(If you need a term to equal something that might otherwise be interpreted as
+an operator, you can enclose the term in double quotes, e.g., while <code>foo:
+bar</code> would be interpreted a single compound token, <code>"foo:"
+bar</code> would be treated as two distinct simple tokens.)
+
+Tokens are passed to parsers as instances of the Token class. The Token class
+provides #operator and #term methods, but delegates all other behavior to the
+String class. Consequently, when writing parsers, you have the option of either
+interacting with the token as a raw String or making use of the extra
+functionality of Tokens.
 
 ## Parsers
 
-Any object that can respond to the <code>#call</code> method can be used as a
-parser. If the parser succeeds, it should return an Array of arguments that can
-be sent to the query object using <code>#public_send</code>, e.g.,
-<code>[:where, { id: 42 }]</code>. If the parser fails, it should return a
-falsey value (typically nil).
+Any object that can respond to the #call method can be used as a parser. If the
+parser succeeds, it should return an Array of arguments that can be sent to the
+query object using #public_send, e.g., <code>[:where, { id: 42 }]</code>. If
+the parser fails, it should return a falsey value.
 
 For very simple parsers which need not be reusable, you can pass the
 parsing logic to the <code>parser</code> method as a block:
@@ -177,34 +209,6 @@ classes:
     class CategorySearch < SearchLingo::AbstractSearch
       parser Parsers::IdParser.new :categories
     end
-
-## Tokenization
-
-Queries are comprised of one or more tokens separated by spaces. A simple token
-is a term which can be a single word (or date, number, etc.) or multiple terms
-within a pair of double quotes. A compound token is a simple token preceded by
-an operator followed by zero or more spaces.
-
-    QUERY          := TOKEN*
-    TOKEN          := COMPOUND_TOKEN | TERM
-    COMPOUND_TOKEN := OPERATOR TERM
-    OPERATOR       := [[:graph:]]+:
-    TERM           := "[^"]*" | [[:graph:]]+
-
-Terms can be things like:
-
-* foo
-* "foo bar"
-* 6/14/15
-* 1000.00
-
-Operators can be things like:
-
-* foo:
-* bar_baz:
-
-(If you want to perform a query with a term that could potentially be parsed as
-an operator, you would place the term in quotes, i.e., "foo:".)
 
 ## Development
 
