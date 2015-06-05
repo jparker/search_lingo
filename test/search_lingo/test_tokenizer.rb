@@ -3,14 +3,24 @@ require 'minitest_helper'
 
 module SearchLingo
   class TestTokenizer < Minitest::Test
-    def test_single_word_simple_tokens
+    def test_empty_query_string
+      tokenizer = Tokenizer.new ''
+      assert_empty tokenizer.to_a
+    end
+
+    def test_blank_query_string
+      tokenizer = Tokenizer.new " \t\n"
+      assert_empty tokenizer.to_a
+    end
+
+    def test_simple_tokens
       tokenizer = Tokenizer.new 'foo bar'
       assert_equal %w[foo bar], tokenizer.to_a
     end
 
-    def test_multiword_simple_tokens
-      tokenizer = Tokenizer.new '"foo bar" "baz froz"'
-      assert_equal ['"foo bar"', '"baz froz"'], tokenizer.to_a
+    def test_quoted_tokens
+      tokenizer = Tokenizer.new '"foo bar" "baz"'
+      assert_equal ['"foo bar"', '"baz"'], tokenizer.to_a
     end
 
     def test_compound_tokens
@@ -23,26 +33,21 @@ module SearchLingo
       assert_equal ['foo:bar', 'baz:"froz quux"'], tokenizer.to_a
     end
 
-    def test_wide_variety_of_tokens
-      tokenizer = Tokenizer.new 'a b: c "d e" f: "g h"'
-      assert_equal ['a', 'b: c', '"d e"', 'f: "g h"'], tokenizer.to_a
+    def test_lots_of_tokens
+      tokenizer = Tokenizer.new 'foo bar: baz "froz quux"'
+      assert_equal ['foo', 'bar: baz', '"froz quux"'], tokenizer.to_a
     end
 
     def test_tokenizer_does_not_choke_on_superfluous_spaces
-      tokenizer = Tokenizer.new '  foo    bar  '
-      assert_equal 'foo', tokenizer.next
-      assert_equal 'bar', tokenizer.next
-      assert_raises(StopIteration) { tokenizer.next }
+      tokenizer = Tokenizer.new "  foo\t\tbar\r\n"
+      assert_equal %w[foo bar], tokenizer.to_a
     end
 
     def test_reset
       tokenizer = Tokenizer.new 'foo'
-
       assert_equal 'foo', tokenizer.next
       assert_raises(StopIteration) { tokenizer.next }
-
       tokenizer.reset
-
       assert_equal 'foo', tokenizer.next
     end
 

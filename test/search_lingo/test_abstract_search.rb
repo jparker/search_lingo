@@ -39,7 +39,7 @@ module SearchLingo
     def test_parser_with_no_arguments
       cls = Class.new AbstractSearch
       error = assert_raises(ArgumentError) { cls.parser }
-      assert_equal '.parse must be called with callable or block', error.message
+      assert_equal 'parse must be called with callable or block', error.message
     end
 
     def test_descendents_of_abstract_class_have_distinct_parsers

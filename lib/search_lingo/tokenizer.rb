@@ -15,26 +15,23 @@ module SearchLingo
       @scanner = StringScanner.new query.strip
     end
 
-    def enum
-      Enumerator.new do |yielder|
-        until scanner.eos?
-          token = scanner.scan COMPOUND
-          if token
-            yielder << Token.new(token)
-          end
-          scanner.skip DELIMITER
-        end
+    def each
+      until scanner.eos?
+        yield self.next
       end
     end
 
+    def next
+      scanner.skip DELIMITER
+      token = scanner.scan(COMPOUND) or raise StopIteration
+      Token.new token
+    end
+
     def_delegator :scanner, :reset
-    def_delegators :enum, :each, :next
 
     def simplify
       scanner.unscan
-      Token.new(scanner.scan(SIMPLE)).tap do
-        scanner.skip DELIMITER
-      end
+      Token.new scanner.scan SIMPLE
     end
 
     private

@@ -2,13 +2,12 @@ require 'search_lingo/tokenizer'
 
 module SearchLingo
   class AbstractSearch
-    def initialize(query, scope, tokenizer: Tokenizer)
+    def initialize(query, scope)
       @query = query || ''
       @scope = scope
-      @tokenizer = tokenizer.new @query
     end
 
-    attr_reader :query, :scope, :tokenizer
+    attr_reader :query, :scope
 
     def self.parsers
       @parsers ||= []
@@ -16,7 +15,7 @@ module SearchLingo
 
     def self.parser(callable = nil, &block)
       unless callable || block_given?
-        raise ArgumentError, '.parse must be called with callable or block'
+        raise ArgumentError, 'parse must be called with callable or block'
       end
       if callable && block_given?
         warn "WARNING: parse called with callable and block (#{caller.first}"
@@ -46,6 +45,10 @@ module SearchLingo
           default_parse token
         end
       end
+    end
+
+    def tokenizer
+      @tokenizer ||= Tokenizer.new query
     end
 
     def parse(token)
