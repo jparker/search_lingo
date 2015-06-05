@@ -13,6 +13,9 @@ project. Although originally designed to work with basic searching with
 ActiveRecord models, it should be usable with other data stores provided they
 let you chain queries together onto a single object.
 
+Be advised this software is still in beta release, and some of the internals
+are still subject to significant change.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -30,6 +33,52 @@ Or install it yourself as:
     $ gem install search_lingo
 
 ## Usage
+
+Here is a simple example.
+
+    class Task < ActiveRecord::Base
+    end
+
+    class TaskSearch < SearchLingo::AbstractSearch
+      def default_parse(token)
+        [:where, 'tasks.name LIKE ?', "%#{token}%"]
+      end
+    end
+
+    TaskSearch.new('foo bar', Task).results
+    # => Task.where('tasks.name LIKE ?', '%foo%').where('tasks.name LIKE ?', '%bar%')
+    TaskSearch.new('"foo bar"', Task).results
+    # => Task.where('tasks.name LIKE ?', '%foo bar%')
+
+    class Category < ActiveRecord::Base
+      has_many :tasks
+    end
+
+    class Task < ActiveRecord::Base
+      belongs_to :category
+    end
+
+    class TaskSearch < SearchLingo::AbstractSearch
+      parser do |token|
+        token.match /\Acategory:\s*"?(.*?)"?\z/ do |m}
+          [:where, { categories: { name: m[1] } }]
+        end
+      end
+
+      def default_parse(token)
+        [:where, 'tasks.name LIKE ?', "%#{token}%"]
+      end
+
+      def scope
+        @scope.includes(:category).references(:category)
+      end
+    end
+
+    TaskSearch.new('category: "foo bar" baz', Task).results
+    # => Task.includes(:category)
+    #      .references(:category)
+    #      .where(categories: { name: 'foo bar' })
+    #      .where('tasks.name LIKE ?', '%baz%')
 
 Create a class which inherits from SearchLingo::AbstractSearch. Provide an
 implementation of <code>#default_parse</code> in that class. Register parsers
