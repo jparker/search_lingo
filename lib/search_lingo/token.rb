@@ -17,7 +17,8 @@ module SearchLingo
     end
 
     def inspect
-      '#<%s String(%s) operator=%s term=%s>' % [self.class, super, operator.inspect, term.inspect]
+      '#<%s String(%s) operator=%s term=%s>' %
+        [self.class, super, operator.inspect, term.inspect]
     end
   end
 end
