@@ -50,6 +50,8 @@ Here is a simple example.
     TaskSearch.new('"foo bar"', Task).results
     # => Task.where('tasks.name LIKE ?', '%foo bar%')
 
+And here is a more complex example.
+
     class Category < ActiveRecord::Base
       has_many :tasks
     end
@@ -75,10 +77,7 @@ Here is a simple example.
     end
 
     TaskSearch.new('category: "foo bar" baz', Task).results
-    # => Task.includes(:category)
-    #      .references(:category)
-    #      .where(categories: { name: 'foo bar' })
-    #      .where('tasks.name LIKE ?', '%baz%')
+    # => Task.includes(:category).references(:category).where(categories: { name: 'foo bar' }).where('tasks.name LIKE ?', '%baz%')
 
 Create a class which inherits from SearchLingo::AbstractSearch. Provide an
 implementation of <code>#default_parse</code> in that class. Register parsers
@@ -107,12 +106,13 @@ succeeds.)
 ## Search Classes
 
 Search classes should inherit from SearchLogic::AbstractSearch, and they must
-provide their own implementation of #default_parse. Optionally, a search class
-may also use the parse class method to add specialized parsers for handling
-tokens that match specific patterns. As each token is processed, the search
-class will first run through the specialized parsers. If none of them succeed,
-it will fall back on the #default_parse method. See the section "Parsing" for
-more information on how parsers work and how they should be structured.
+provide their own implementation of <code>#default_parse</code>. Optionally, a
+search class may also use the parse class method to add specialized parsers for
+handling tokens that match specific patterns. As each token is processed, the
+search class will first run through the specialized parsers. If none of them
+succeed, it will fall back on the <code>#default_parse</code> method. See the
+section "Parsing" for more information on how parsers work and how they should
+be structured.
 
 ## Tokenization
 
@@ -142,17 +142,18 @@ bar</code> would be interpreted a single compound token, <code>"foo:"
 bar</code> would be treated as two distinct simple tokens.)
 
 Tokens are passed to parsers as instances of the Token class. The Token class
-provides #operator and #term methods, but delegates all other behavior to the
-String class. Consequently, when writing parsers, you have the option of either
-interacting with the token as a raw String or making use of the extra
-functionality of Tokens.
+provides <code>#operator</code> and <code>#term</code> methods, but delegates
+all other behavior to the String class. Consequently, when writing parsers, you
+have the option of either interacting with the token as a raw String or making
+use of the extra functionality of Tokens.
 
 ## Parsers
 
-Any object that can respond to the #call method can be used as a parser. If the
-parser succeeds, it should return an Array of arguments that can be sent to the
-query object using #public_send, e.g., <code>[:where, { id: 42 }]</code>. If
-the parser fails, it should return a falsey value.
+Any object that can respond to the <code>#call</code> method can be used as a
+parser. If the parser succeeds, it should return an Array of arguments that can
+be sent to the query object using <code>#public_send</code>, e.g.,
+<code>[:where, { id: 42 }]</code>. If the parser fails, it should return a
+falsey value.
 
 For very simple parsers which need not be reusable, you can pass the
 parsing logic to the <code>parser</code> method as a block:
