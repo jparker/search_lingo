@@ -39,6 +39,12 @@ module SearchLingo
       assert_equal 'foo:', token.term
     end
 
+    def test_compound_token_wrapped_in_quotes_is_actually_a_simple_token
+      token = Token.new '"foo: bar"'
+      assert_nil token.operator
+      assert_equal 'foo: bar', token.term
+    end
+
     def test_match_is_delegated_to_original_string
       string = Minitest::Mock.new
       token  = Token.new string
