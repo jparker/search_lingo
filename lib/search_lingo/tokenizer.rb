@@ -1,5 +1,6 @@
 require 'forwardable'
 require 'strscan'
+require 'search_lingo/constants'
 require 'search_lingo/token'
 
 module SearchLingo
@@ -7,9 +8,9 @@ module SearchLingo
     include Enumerable
     extend Forwardable
 
-    SIMPLE    = %r{"[^"]*"|[[:graph:]]+}
-    COMPOUND  = %r{(?:[[:graph:]]+:[[:space:]]*)?#{SIMPLE}}
-    DELIMITER = %r{[[:space:]]*}
+    SIMPLE_TOKEN   = /#{TERM}/
+    COMPOUND_TOKEN = /(?:#{OPERATOR}:[[:space:]]*)?#{TERM}/
+    DELIMITER      = /[[:space:]]*/
 
     def initialize(query)
       @scanner = StringScanner.new query.strip
@@ -23,7 +24,8 @@ module SearchLingo
 
     def next
       scanner.skip DELIMITER
-      token = scanner.scan(COMPOUND) or raise StopIteration
+      token = scanner.scan COMPOUND_TOKEN
+      raise StopIteration unless token
       Token.new token
     end
 
@@ -31,7 +33,7 @@ module SearchLingo
 
     def simplify
       scanner.unscan
-      Token.new scanner.scan SIMPLE
+      Token.new scanner.scan SIMPLE_TOKEN
     end
 
     private

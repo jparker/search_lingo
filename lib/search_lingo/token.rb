@@ -1,15 +1,16 @@
 require 'delegate'
+require 'search_lingo/constants'
 
 module SearchLingo
   class Token < DelegateClass(String)
-    FORMAT = %r{\A(?:([^"\s]+):\s*)?"?(.+?)"?\z}
+    STRUCTURE = /\A(?:(#{OPERATOR}):[[:space:]]*)?"?(.+?)"?\z/
 
     def operator
-      self[FORMAT, 1]
+      self[STRUCTURE, 1]
     end
 
     def term
-      self[FORMAT, 2]
+      self[STRUCTURE, 2]
     end
 
     def compound?
