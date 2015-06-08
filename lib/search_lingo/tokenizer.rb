@@ -17,6 +17,8 @@ module SearchLingo
     end
 
     def each
+      return to_enum(__callee__) unless block_given?
+
       until scanner.eos?
         yield self.next
       end
