@@ -121,12 +121,11 @@ has a term and an optional operator. (A simple token has no operator; a
 compound token does.) A term can be a single word or multiple words joined by
 spaces and contained within double quotes. For example <code>foo</code> and
 <code>"foo bar baz"</code> are both single terms. An operator is one or more
-printable (non-space) characters, and it is separated from the term by a colon
-and zero or more spaces.
+alphanumeric characters followed by a colon and zero or more spaces.
 
     QUERY    := TOKEN*
     TOKEN    := (OPERATOR ':' [[:space:]]*)? TERM
-    OPERATOR := [[:graph:]]+
+    OPERATOR := [[:alnum:]]+
     TERM     := '"' [^"]* '"' | [[:graph:]]+
 
 The following are all examples of tokens:
