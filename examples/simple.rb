@@ -7,9 +7,7 @@ class TaskSearch < SearchLingo::AbstractSearch
     :due_date
   parser SearchLingo::Parsers::DateRangeParser.new :tasks,
     :due_date
-  parser SearchLingo::Parsers::LTEDateParser.new :tasks,
-    :due_date, connection: ActiveRecord::Base.connection
-  parser SearchLingo::Parsers::GTEDateParser.new :tasks,
+  parser SearchLingo::Parsers::OpenDateRangeParser.new :tasks,
     :due_date, connection: ActiveRecord::Base.connection
 
   parser do |token|

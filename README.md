@@ -137,7 +137,7 @@ or an Array that can be splatted and sent to the search scope.
 
 ## Search Classes
 
-Search classes should inherit from `SearchLogic::AbstractSearch`, and they must
+Search classes should inherit from `SearchLingo::AbstractSearch`, and they must
 provide their own implementation of `#default_parse`. Optionally, a search
 class may also use the parse class method to add specialized parsers for
 handling tokens that match specific patterns. As each token is processed, the
@@ -173,9 +173,9 @@ would be interpreted a single compound token, `"foo:" bar` would be treated as
 two distinct simple tokens, and `"foo: bar"` would be treated as a single
 simple token.)
 
-Tokens are passed to parsers as instances of the SearchLingo::Token class.
-SearchLingo::Token provides `#operator` and `#term` methods, but delegates all
-other behavior to the String class. Consequently, when writing parsers, you
+Tokens are passed to parsers as instances of the `SearchLingo::Token` class.
+`SearchLingo::Token` provides `#operator` and `#term` methods, but delegates
+all other behavior to the String class. Consequently, when writing parsers, you
 have the option of either interacting with examining the operator and term
 individually or treating the entire token as a String and processing it
 yourself. The following would produce identical results:
