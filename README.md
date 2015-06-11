@@ -56,49 +56,61 @@ Here is a simple example.
 
 And here is a more complex example.
 
-    class Category < ActiveRecord::Base
-      has_many :tasks
+```ruby
+class User < ActiveRecord::Base
+  has_many :tasks
+end
+
+class Category < ActiveRecord::Base
+  has_many :tasks
+end
+
+class Task < ActiveRecord::Base
+  belongs_to :category
+  belongs_to :user
+  enum state: [:incomplete, :complete]
+end
+
+class TaskSearch < SearchLingo::AbstractSearch
+  parser do |token|
+    token.match /\Acategory:\s*"?(.*?)"?\z/ do |m|
+      [:where, { categories: { name: m[1] } }]
     end
+  end
 
-    class Task < ActiveRecord::Base
-      belongs_to :category
-      enum state: [:incomplete, :complete]
+  parser do |token|
+    token.match /\Ais:\s*(?<state>(?:in)?complete)\z/ do |m|
+      [m[:state].to_sym]
     end
+  end
 
-    class TaskSearch < SearchLingo::AbstractSearch
-      parser do |token|
-        token.match /\Acategory:\s*"?(.*?)"?\z/ do |m|
-          [:where, { categories: { name: m[1] } }]
-        end
-      end
-
-      parser do |token|
-        token.match /\Ais:\s*(?<state>(?:in)?complete)\z/ do |m|
-          [m[:state].to_sym]
-        end
-      end
-
-      parser do |token|
-        token.match /\A([<>])([[:digit:]]+)\z/ do |m|
-          [:where, 'tasks.priority #{m[1]} ?', m[2]]
-        end
-      end
-
-      def default_parse(token)
-        [:where, 'tasks.name LIKE ?', "%#{token}%"]
-      end
-
-      def scope
-        @scope.includes(:category).references(:category)
-      end
+  parser do |token|
+    token.match /\A([<>])([[:digit:]]+)\z/ do |m|
+      [:where, 'tasks.priority #{m[1]} ?', m[2]]
     end
+  end
 
-    TaskSearch.new('category: "foo bar" <2 baz is: incomplete', Task).results
-    # => Task.includes(:category).references(:category)
-    # ->   .where(categories: { name: 'foo bar' })
-    # ->   .where('tasks.priority < ?', 2)
-    # ->   .where('tasks.name LIKE ?', '%baz%')
-    # ->   .incomplete
+  def default_parse(token)
+    [:where, 'tasks.name LIKE ?', "%#{token}%"]
+  end
+
+  def scope
+    @scope.includes(:category).references(:category)
+  end
+end
+
+TaskSearch.new('category: "foo bar" <2 baz is: incomplete', Task).results
+# => Task.includes(:category).references(:category)
+# ->   .where(categories: { name: 'foo bar' })
+# ->   .where('tasks.priority < ?', 2)
+# ->   .where('tasks.name LIKE ?', '%baz%')
+# ->   .incomplete
+
+TaskSearch.new('category: "foo bar"', User.find(42).tasks).results
+# => Task.includes(:category).references(:category)
+# ->   .where(user_id: 42)
+# ->   .where(categories: { name: 'foo bar' })
+```
 
 Create a class which inherits from `SearchLingo::AbstractSearch`. Provide an
 implementation of `#default_parse` in that class. Register parsers for specific
