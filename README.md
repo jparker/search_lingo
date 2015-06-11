@@ -1,4 +1,4 @@
-# [![Gem Version](https://badge.fury.io/rb/search_lingo.svg)](http://badge.fury.io/rb/search_lingo)
+# [![Gem Version](https://badge.fury.io/rb/search_lingo.svg)](http://badge.fury.io/rb/search_lingo) [![Build Status](https://travis-ci.org/jparker/search_lingo.svg?branch=master)](https://travis-ci.org/jparker/search_lingo)
 
 # SearchLingo
 
