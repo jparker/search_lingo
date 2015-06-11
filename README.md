@@ -15,9 +15,6 @@ project. Although originally designed to work with basic searching with
 ActiveRecord models, it should be usable with other data stores provided they
 let you build complex queries by chaining together simpler queries.
 
-Be advised this software is still settling, and some of the internals are still
-subject to significant change.
-
 ## Installation
 
 Add this line to your application's Gemfile:
