@@ -27,9 +27,7 @@ class JobSearch < AbstractSearch
     :date
   parser SearchLingo::Parsers::DateRangeParser.new Job.table_name,
     :date
-  parser SearchLingo::Parsers::LTEDateParser.new Job.table_name,
-    :date, connection: Job.connection
-  parser SearchLingo::Parsers::GTEDateParser.new Job.table_name,
+  parser SearchLingo::Parsers::OpenDateRangeParser.new Job.table_name,
     :date, connection: Job.connection
 
   def default_parse(token)
@@ -44,18 +42,14 @@ class ReceiptSearch < AbstractSearch
     :check_date
   parser SearchLingo::Parsers::DateRangeParser.new Receipt.table_name,
     :check_date
-  parser SearchLingo::Parsers::LTEDateParser.new Receipt.table_name,
-    :check_date, connection: Receipt.connection
-  parser SearchLingo::Parsers::GTEDateParser.new Receipt.table_name,
+  parser SearchLingo::Parsers::OpenDateRangeParser.new Receipt.table_name,
     :check_date, connection: Receipt.connection
 
   parser SearchLingo::Parsers::DateParser.new Receipt.table_name,
     :post_date, 'posted'
   parser SearchLingo::Parsers::DateRangeParser.new Receipt.table_name,
     :post_date, 'posted'
-  parser SearchLingo::Parsers::LTEDateParser.new Receipt.table_name,
-    :post_date, 'posted', connection: Receipt.connection
-  parser SearchLingo::Parsers::GTEDateParser.new Receipt.table_name,
+  parser SearchLingo::Parsers::OpenDateRangeParser.new Receipt.table_name,
     :post_date, 'posted', connection: Receipt.connection
 
   parser do |token|
