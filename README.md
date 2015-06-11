@@ -38,21 +38,23 @@ Or install it yourself as:
 
 Here is a simple example.
 
-    class Task < ActiveRecord::Base
-    end
+```ruby
+class Task < ActiveRecord::Base
+end
 
-    class TaskSearch < SearchLingo::AbstractSearch
-      def default_parse(token)
-        [:where, 'tasks.name LIKE ?', "%#{token}%"]
-      end
-    end
+class TaskSearch < SearchLingo::AbstractSearch
+  def default_parse(token)
+    [:where, 'tasks.name LIKE ?', "%#{token}%"]
+  end
+end
 
-    TaskSearch.new('foo bar', Task).results
-    # => Task.where('tasks.name LIKE ?', '%foo%')
-    # ->   .where('tasks.name LIKE ?', '%bar%')
+TaskSearch.new('foo bar', Task).results
+# => Task.where('tasks.name LIKE ?', '%foo%')
+# ->   .where('tasks.name LIKE ?', '%bar%')
 
-    TaskSearch.new('"foo bar"', Task).results
-    # => Task.where('tasks.name LIKE ?', '%foo bar%')
+TaskSearch.new('"foo bar"', Task).results
+# => Task.where('tasks.name LIKE ?', '%foo bar%')
+```
 
 And here is a more complex example.
 
