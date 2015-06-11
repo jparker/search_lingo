@@ -7,7 +7,7 @@ module SearchLingo
       @scope = scope
     end
 
-    attr_reader :query, :scope
+    attr_reader :query
 
     def self.parsers
       @parsers ||= []
@@ -61,6 +61,10 @@ module SearchLingo
     def default_parse(token)
       raise NotImplementedError,
         "#default_parse must be implemented by #{self.class}"
+    end
+
+    def scope
+      @scope
     end
   end
 end
