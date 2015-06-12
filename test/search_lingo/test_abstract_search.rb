@@ -33,7 +33,7 @@ module SearchLingo
     def test_parser_with_a_block
       cls = Class.new AbstractSearch
       cls.parser { }
-      refute_nil cls.parsers.first
+      assert_kind_of Proc, cls.parsers.first
     end
 
     def test_parser_with_no_arguments
@@ -44,10 +44,8 @@ module SearchLingo
 
     def test_descendents_of_abstract_class_have_distinct_parsers
       cls1 = Class.new AbstractSearch
-      cls1.parser { }
       cls2 = Class.new AbstractSearch
-      cls2.parser { }
-      refute_equal cls1.parsers, cls2.parsers
+      refute_same cls1.parsers, cls2.parsers
     end
 
     def test_parse_calls_each_parser_with_token
@@ -59,8 +57,9 @@ module SearchLingo
       cls = Class.new AbstractSearch
       cls.parser parser1
       cls.parser parser2
+      search = cls.new('', :scope)
 
-      cls.new('', :scope).parse('foo')
+      search.parse('foo')
 
       parser1.verify
       parser2.verify
@@ -71,44 +70,52 @@ module SearchLingo
       cls.parser { [:foo] }
       cls.parser { flunk 'should not have been called' }
       search = cls.new '', :scope
+
       assert_throws(:match) { search.parse 'foo' }
     end
 
     def test_default_parse_raises_error
       cls = Class.new AbstractSearch
       search = cls.new '', :scope
+
       assert_raises(NotImplementedError) { search.default_parse 'foo' }
     end
 
     def test_conditions_when_token_falls_through_to_default_parser
       cls = Class.new AbstractSearch do
+        parser { nil }
+
         def default_parse(token)
           [:foo, token.term]
         end
       end
       search = cls.new('foo', :scope)
 
-      assert_equal [[:foo, 'foo']], cls.new('foo', :scope).conditions
+      assert_equal [[:foo, 'foo']], search.conditions
     end
 
     def test_conditions_with_multiple_parsers
       cls = Class.new AbstractSearch
-      cls.parser { |token| token.match(/\A(foo)\z/) { |m| [:foo, m[1]] } }
-      cls.parser { |token| token.match(/\A(bar)\z/) { |m| [:bar, m[1]] } }
+      cls.parser { |token| token.match(/\Afoo\z/) { |m| [:foo] } }
+      cls.parser { |token| token.match(/\Abar\z/) { |m| [:bar] } }
       search = cls.new('foo bar', :scope)
 
-      assert_equal [[:foo, 'foo'], [:bar, 'bar']], search.conditions
+      assert_equal [[:foo], [:bar]], search.conditions
     end
 
     def test_conditions_when_compound_token_is_matched
       cls = Class.new AbstractSearch do
+        parser do |token|
+          token.match(/\Afoo:\s*(.*)\z/) { |m| [:foo, m[1]] }
+        end
+
         def default_parse(token)
           raise '#default_parse should not have been reached'
         end
       end
-      cls.parser { |token| token.match(/\Afoo:\s*(.*)\z/) { |m| [:foo, m[1]] } }
+      search = cls.new('foo: bar', :scope)
 
-      assert_equal [[:foo, 'bar']], cls.new('foo: bar', :scope).conditions
+      assert_equal [[:foo, 'bar']], search.conditions
     end
 
     def test_conditions_when_compound_token_is_simplified
@@ -123,14 +130,15 @@ module SearchLingo
     end
 
     def test_results_sends_conditions_to_scope
-      cls = Class.new AbstractSearch
-      cls.parser { |token| [:where, token.term] }
-
       scope = Minitest::Mock.new
       scope.expect(:where, scope, ['foo'])
       scope.expect(:where, scope, ['bar'])
 
-      cls.new('foo bar', scope).results
+      cls = Class.new AbstractSearch
+      cls.parser { |token| [:where, token.term] }
+      search = cls.new('foo bar', scope)
+
+      search.results
 
       scope.verify
     end
