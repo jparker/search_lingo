@@ -18,6 +18,7 @@ module SearchLingo
         raise ArgumentError, 'parse must be called with callable or block'
       end
       if callable && block_given?
+        # TODO: should this raise an error instead?
         warn "WARNING: parse called with callable and block (#{caller.first}"
       end
 
@@ -63,6 +64,8 @@ module SearchLingo
         "#default_parse must be implemented by #{self.class}"
     end
 
+    # You can override this method in your search class to ensure additional
+    # tables are joined before executing your search.
     def scope
       @scope
     end

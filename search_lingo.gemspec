@@ -24,6 +24,12 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency "bundler", "~> 1.9"
   spec.add_development_dependency "rake", "~> 10.0"
   spec.add_development_dependency 'minitest'
+  spec.add_development_dependency 'sequel'
+  spec.add_development_dependency 'sqlite3'
+
+  # Sorry for forcing these gems on you. They aren't, strictly speaking,
+  # essential to the development process, but I find them invaluable.
   spec.add_development_dependency 'minitest-focus'
+  spec.add_development_dependency 'minitest-reporters'
   spec.add_development_dependency 'pry'
 end
