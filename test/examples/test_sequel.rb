@@ -1,7 +1,7 @@
 require 'minitest_helper'
 require 'search_lingo'
 
-require File.expand_path File.join('..', 'examples', 'sequel_example'), __dir__
+require File.expand_path File.join('..', '..', 'examples', 'sequel_example'), __dir__
 
 class TestSequelSearch < Minitest::Test
   def setup

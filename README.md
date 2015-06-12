@@ -33,7 +33,8 @@ Or install it yourself as:
 
 ## Usage
 
-Here is a simple example.
+Concrete examples of how to use this gem are provided in `examples/` and
+`test/examples/`, but here is a simple example.
 
 ```ruby
 class Task < ActiveRecord::Base
@@ -116,10 +117,8 @@ implementation of `#default_parse` in that class. Register parsers for specific
 types of search tokens using the parser class method.
 
 Instantiate your search class by passing in the query string and the scope on
-which to perform the search. Use the `#results` method to compile the search
-and return the results.
-
-Take a look at the examples/ directory for more concrete examples.
+which to perform the search. Use the `#results` method to compile and execute
+the search and return the results.
 
 ## How It Works
 
