@@ -11,17 +11,16 @@ module SearchLingo
 
           day   = Integer(m[:d])
           month = Integer(m[:m])
-          year  = begin
-                    if month < relative_to.month || month == relative_to.month && day <= relative_to.day
-                      relative_to.year
-                    else
-                      relative_to.year - 1
-                    end
+          year  = if month < relative_to.month || month == relative_to.month && day <= relative_to.day
+                    relative_to.year
+                  else
+                    relative_to.year - 1
                   end
 
           Date.new year, month, day
         end
       rescue ArgumentError
+        # returns nil
       end
 
       module_function :parse
