@@ -15,6 +15,10 @@ module SearchLingo
 
       attr_reader :table, :column, :prefix
 
+      # This implementation is specific to ActiveRecord::Base#where semantics.
+      # Explore an agnostic implementation or rename the DateParser class (and
+      # its descendants) to indicate that it is ActiveRecord-centric. If going
+      # the latter route, provide a Sequel-specific implementation as well.
       def call(token)
         token.match /\A#{prefix}(?<date>#{US_DATE})\z/ do |m|
           date = parse m[:date]

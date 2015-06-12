@@ -275,8 +275,12 @@ Additionally, there are parsers for handling closed date ranges (e.g.,
 `1/1/15-6/30/15`) as well as open-ended date ranges (e.g., `1/1/15-` and
 `12/31/15`). Look at the files in `lib/search_lingo/parsers` for more details.
 
-As implemented, the date parsers are US-centric. I would like to work on making
-them more flexible when time permits.
+The date parser are specifically designed to work with US-formatted dates. Time
+permitting, I will work on making them more flexible. As implemented they are
+also ActiveRecord-centric; this also needs to be reexamined reexamined, either
+by finding a more agnostic implementation or renaming the parser classes to
+indicate they are ActiveRecord-only implementations. (If going the latter
+route, a Sequel-specific implementation should also be provided.)
 
 ## Development
 

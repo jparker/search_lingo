@@ -6,26 +6,8 @@ module SearchLingo
     class OpenDateRangeParser < DateParser
       extend Forwardable
 
-      DATE_RANGE = /(?:-(?<max>#{US_DATE})|(?<min>#{US_DATE})-)/
-
       def call(token)
-        token.match /\A#{prefix}#{DATE_RANGE}\z/ do |m|
-          if m[:max]
-            date = parse m[:max]
-            [
-              :where,
-              "#{quote_table_name table}.#{quote_column_name column} <= ?",
-              date
-            ] if date
-          else
-            date = parse m[:min]
-            [
-              :where,
-              "#{quote_table_name table}.#{quote_column_name column} >= ?",
-              date
-            ] if date
-          end
-        end
+        parse_lte(token) || parse_gte(token)
       end
 
       def post_initialize(connection:, **)
@@ -33,6 +15,32 @@ module SearchLingo
       end
 
       def_delegators :@connection, :quote_column_name, :quote_table_name
+
+      private
+
+      def parse_lte(token)
+        token.match /\A#{prefix}-(?<date>#{US_DATE})\z/ do |m|
+          if date = parse(m[:date])
+            [
+              :where,
+              "#{quote_table_name table}.#{quote_column_name column} <= ?",
+              date
+            ]
+          end
+        end
+      end
+
+      def parse_gte(token)
+        token.match /\A#{prefix}(?<date>#{US_DATE})-\z/ do |m|
+          if date = parse(m[:date])
+            [
+              :where,
+              "#{quote_table_name table}.#{quote_column_name column} >= ?",
+              date
+            ]
+          end
+        end
+      end
     end
   end
 end
