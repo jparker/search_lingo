@@ -2,7 +2,7 @@ require 'search_lingo/token'
 require 'minitest_helper'
 
 module SearchLingo
-  class TestToken < Minitest::Test
+  class TestToken < Minitest::Test # :nodoc:
     def test_simple_token
       token = Token.new 'foo'
       assert_nil token.operator

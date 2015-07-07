@@ -2,7 +2,7 @@ require 'search_lingo/parsers/open_date_range_parser'
 require 'minitest_helper'
 
 module SearchLingo::Parsers
-  class TestOpenDateRangeParser < Minitest::Test
+  class TestOpenDateRangeParser < Minitest::Test # :nodoc:
     def test_less_than_or_equal_to_MMDDYYYY
       parser = OpenDateRangeParser.new :table, :column,
         connection: dummy_connection
@@ -80,7 +80,7 @@ module SearchLingo::Parsers
       DummyConnection.new
     end
 
-    class DummyConnection
+    class DummyConnection # :nodoc:
       def quote_column_name(name)
         name
       end

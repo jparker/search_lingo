@@ -3,7 +3,7 @@ require 'search_lingo'
 
 require File.expand_path File.join('..', '..', 'examples', 'sequel_example'), __dir__
 
-class TestSequelSearch < Minitest::Test
+class TestSequelSearch < Minitest::Test # :nodoc:
   def setup
     @en = Category.create(name: 'english').tap do |cat|
       cat.add_task name: 'one', priority: 1, due_date: Date.new(2015, 1)

@@ -2,7 +2,7 @@ require 'search_lingo/parsers/date_range_parser'
 require 'minitest_helper'
 
 module SearchLingo::Parsers
-  class TestDateRangeParser < Minitest::Test
+  class TestDateRangeParser < Minitest::Test # :nodoc:
     def test_token_matching_MMDDYYYY_MMDDYYYY
       parser   = DateRangeParser.new(:table, :column)
       june1    = Date.new(2015, 6, 1)

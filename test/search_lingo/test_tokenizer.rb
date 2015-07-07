@@ -2,7 +2,7 @@ require 'search_lingo/tokenizer'
 require 'minitest_helper'
 
 module SearchLingo
-  class TestTokenizer < Minitest::Test
+  class TestTokenizer < Minitest::Test # :nodoc:
     def test_empty_query_string
       tokenizer = Tokenizer.new ''
       assert_empty tokenizer.to_a

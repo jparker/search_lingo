@@ -20,15 +20,15 @@ DB.create_table :tasks do
   Date :due_date, null: false
 end
 
-class Category < Sequel::Model
+class Category < Sequel::Model # :nodoc:
   one_to_many :tasks
 end
 
-class Task < Sequel::Model
+class Task < Sequel::Model # :nodoc:
   many_to_one :category
 end
 
-class CategoryParser
+class CategoryParser # :nodoc:
   def call(token)
     if token.operator == 'cat'
       [:where, { category__name: token.term }]
@@ -36,7 +36,7 @@ class CategoryParser
   end
 end
 
-class TaskSearch < SearchLingo::AbstractSearch
+class TaskSearch < SearchLingo::AbstractSearch # :nodoc:
   parser CategoryParser.new
 
   parser do |token|

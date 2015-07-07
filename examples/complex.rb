@@ -1,13 +1,13 @@
-class Job < ActiveRecord::Base
+class Job < ActiveRecord::Base # :nodoc:
   # Assume this model has attributes: :id, :date, :name
 end
 
-class Receipt < ActiveRecord::Base
+class Receipt < ActiveRecord::Base # :nodoc:
   # Assume this model has attributes: :id, :check_no, :check_date, :post_date, :amount
 end
 
-module Parsers
-  class IdParser
+module Parsers # :nodoc:
+  class IdParser # :nodoc:
     def initialize(table)
       @table = table
     end
@@ -20,7 +20,7 @@ module Parsers
   end
 end
 
-class JobSearch < AbstractSearch
+class JobSearch < SearchLingo::AbstractSearch # :nodoc:
   parser Parsers::IdParser.new Job.table_name
 
   parser SearchLingo::Parsers::DateParser.new Job.table_name,
@@ -35,7 +35,7 @@ class JobSearch < AbstractSearch
   end
 end
 
-class ReceiptSearch < AbstractSearch
+class ReceiptSearch < SearchLingo::AbstractSearch # :nodoc:
   parser Parsers::IdParser.new Receipt.table_name
 
   parser SearchLingo::Parsers::DateParser.new Receipt.table_name,

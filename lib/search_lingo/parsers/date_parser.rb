@@ -1,7 +1,7 @@
 require 'search_lingo/parsers/mdy'
 
 module SearchLingo
-  module Parsers
+  module Parsers # :nodoc:
     class DateParser
       include MDY
 
@@ -26,10 +26,10 @@ module SearchLingo
         end
       end
 
-      def post_initialize(**)
+      def post_initialize(**) # :nodoc:
       end
 
-      def inspect
+      def inspect # :nodoc:
         '#<%s:0x%x @table=%s @column=%s @prefix=%s>' %
           [self.class, object_id << 1, table.inspect, column.inspect, prefix.inspect]
       end

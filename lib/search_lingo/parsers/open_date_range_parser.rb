@@ -2,7 +2,7 @@ require 'search_lingo/parsers/date_parser'
 require 'forwardable'
 
 module SearchLingo
-  module Parsers
+  module Parsers # :nodoc:
     class OpenDateRangeParser < DateParser
       extend Forwardable
 
@@ -18,7 +18,7 @@ module SearchLingo
 
       private
 
-      def parse_lte(token)
+      def parse_lte(token) # :nodoc:
         token.match /\A#{prefix}-(?<date>#{US_DATE})\z/ do |m|
           if date = parse(m[:date])
             [
@@ -30,7 +30,7 @@ module SearchLingo
         end
       end
 
-      def parse_gte(token)
+      def parse_gte(token) # :nodoc:
         token.match /\A#{prefix}(?<date>#{US_DATE})-\z/ do |m|
           if date = parse(m[:date])
             [

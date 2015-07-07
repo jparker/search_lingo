@@ -1,7 +1,7 @@
 require 'search_lingo/parsers/date_parser'
 
 module SearchLingo
-  module Parsers
+  module Parsers # :nodoc:
     class DateRangeParser < DateParser
       def call(token)
         token.match /\A#{prefix}(?<min>#{US_DATE})-(?<max>#{US_DATE})\z/ do |m|

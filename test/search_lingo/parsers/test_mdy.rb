@@ -2,7 +2,7 @@ require 'search_lingo/parsers/mdy'
 require 'minitest_helper'
 
 module SearchLingo::Parsers
-  class TestMDY < Minitest::Test
+  class TestMDY < Minitest::Test # :nodoc:
     def test_parse_MMDDYYYY
       assert_equal Date.new(2015, 6, 1), MDY.parse('6/1/2015')
     end
