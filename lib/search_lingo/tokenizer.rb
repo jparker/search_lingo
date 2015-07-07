@@ -14,7 +14,7 @@ module SearchLingo
 
     ##
     # Pattern for matching a compound token (a term with an optional modifier).
-    COMPOUND_TOKEN = /(?:#{OPERATOR}:[[:space:]]*)?#{TERM}/
+    COMPOUND_TOKEN = /(?:#{MODIFIER}:[[:space:]]*)?#{TERM}/
 
     ##
     # Pattern for matching the delimiter between tokens.

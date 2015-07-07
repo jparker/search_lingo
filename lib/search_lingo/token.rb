@@ -5,17 +5,19 @@ module SearchLingo
   class Token < DelegateClass(String)
     ##
     # Pattern for decomposing a token into a modifier and a term.
-    STRUCTURE = /\A(?:(#{OPERATOR}):[[:space:]]*)?"?(.+?)"?\z/
+    STRUCTURE = /\A(?:(#{MODIFIER}):[[:space:]]*)?"?(.+?)"?\z/
 
     ##
     # Returns the modifier portion of the token. Returns +nil+ if token does
     # not have a modifier.
     #
-    #   Token.new('foo: bar').operator # => 'foo'
-    #   Token.new('bar').operator      # => nil
-    def operator
+    #   Token.new('foo: bar').modifier # => 'foo'
+    #   Token.new('bar').modifier      # => nil
+    def modifier
       self[STRUCTURE, 1]
     end
+
+    alias_method :operator, :modifier
 
     ##
     # Returns the term portion of the token. If the term is wrapped in quotes,
@@ -34,12 +36,12 @@ module SearchLingo
     #   Token.new('foo: bar').compound? # => true
     #   Token.new('bar').compound?      # => false
     def compound?
-      !!operator
+      !!modifier
     end
 
     def inspect # :nodoc:
-      '#<%s String(%s) operator=%s term=%s>' %
-        [self.class, super, operator.inspect, term.inspect]
+      '#<%s String(%s) modifier=%s term=%s>' %
+        [self.class, super, modifier.inspect, term.inspect]
     end
   end
 end

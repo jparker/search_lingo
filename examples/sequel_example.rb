@@ -30,7 +30,7 @@ end
 
 class CategoryParser # :nodoc:
   def call(token)
-    if token.operator == 'cat'
+    if token.modifier == 'cat'
       [:where, { category__name: token.term }]
     end
   end

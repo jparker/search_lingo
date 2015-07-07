@@ -5,10 +5,10 @@ module SearchLingo
     class DateParser
       include MDY
 
-      def initialize(table, column, operator = nil, **options)
+      def initialize(table, column, modifier = nil, **options)
         @table    = table
         @column   = column
-        @prefix   = %r{#{operator}:\s*} if operator
+        @prefix   = %r{#{modifier}:\s*} if modifier
 
         post_initialize **options
       end

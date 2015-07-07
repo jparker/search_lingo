@@ -67,13 +67,13 @@ module SearchLingo::Parsers
       assert_nil parser.call 'bogus-'
     end
 
-    def test_operator
-      parser = OpenDateRangeParser.new :table, :column, :operator,
+    def test_modifier
+      parser = OpenDateRangeParser.new :table, :column, :modifier,
         connection: dummy_connection
 
       assert_nil parser.call('6/10/2015-')
       assert_equal [:where, 'table.column >= ?', Date.new(2015, 6, 10)],
-        parser.call('operator: 6/10/2015-')
+        parser.call('modifier: 6/10/2015-')
     end
 
     def dummy_connection

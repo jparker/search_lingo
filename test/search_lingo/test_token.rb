@@ -5,43 +5,43 @@ module SearchLingo
   class TestToken < Minitest::Test # :nodoc:
     def test_simple_token
       token = Token.new 'foo'
-      assert_nil token.operator
+      assert_nil token.modifier
       assert_equal 'foo', token.term
     end
 
     def test_simple_token_in_quotes
       token = Token.new '"foo bar"'
-      assert_nil token.operator
+      assert_nil token.modifier
       assert_equal 'foo bar', token.term
     end
 
     def test_compound_token
       token = Token.new 'foo: bar'
-      assert_equal 'foo', token.operator
+      assert_equal 'foo', token.modifier
       assert_equal 'bar', token.term
     end
 
     def test_compound_token_with_term_in_quotes
       token = Token.new 'foo: "bar baz"'
-      assert_equal 'foo', token.operator
+      assert_equal 'foo', token.modifier
       assert_equal 'bar baz', token.term
     end
 
-    def test_compound_token_with_no_space_after_operator
+    def test_compound_token_with_no_space_after_modifier
       token = Token.new 'foo:bar'
-      assert_equal 'foo', token.operator
+      assert_equal 'foo', token.modifier
       assert_equal 'bar', token.term
     end
 
-    def test_simple_token_that_looks_like_an_operator
+    def test_simple_token_that_looks_like_an_modifier
       token = Token.new 'foo:'
-      assert_nil token.operator
+      assert_nil token.modifier
       assert_equal 'foo:', token.term
     end
 
     def test_compound_token_wrapped_in_quotes_is_actually_a_simple_token
       token = Token.new '"foo: bar"'
-      assert_nil token.operator
+      assert_nil token.modifier
       assert_equal 'foo: bar', token.term
     end
 

@@ -28,12 +28,12 @@ module SearchLingo
       assert_equal ['foo: bar', 'baz: "froz quux"'], tokenizer.to_a
     end
 
-    def test_compound_tokens_without_space_after_operator
+    def test_compound_tokens_without_space_after_modifier
       tokenizer = Tokenizer.new 'foo:bar baz:"froz quux"'
       assert_equal ['foo:bar', 'baz:"froz quux"'], tokenizer.to_a
     end
 
-    def test_operators_are_limited_to_alphanumeric_characters
+    def test_modifiers_are_limited_to_alphanumeric_characters
       tokenizer = Tokenizer.new 'foo: bar Foo: bar 42: forty-two bogus!: foo'
       assert_equal 'foo: bar', tokenizer.next
       assert_equal 'Foo: bar', tokenizer.next
@@ -41,7 +41,7 @@ module SearchLingo
       assert_equal 'bogus!:', tokenizer.next
       assert_equal 'foo', tokenizer.next
 
-      # TODO: Should we let operators have dashes?
+      # TODO: Should we let modifiers have dashes?
     end
 
     def test_lots_of_tokens

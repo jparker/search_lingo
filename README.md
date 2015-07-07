@@ -127,7 +127,7 @@ ActiveRecord model). The search breaks the query string down into a series of
 tokens, and each token is processed by a declared series of parsers. If a
 parser succeeds, processing immediately advances to the next token. If none of
 the declared parsers succeeds, and the token is compound — that is, the token
-is composed of an operator and a term (e.g., `foo: bar`), the token is
+is composed of a modifier and a term (e.g., `foo: bar`), the token is
 simplified and then processed by the declared parsers again. If the second pass
 also fails, then the (now simplified) token falls through to the
 `#default_parse` method defined by the search class. This method should be
@@ -148,15 +148,15 @@ structured.
 ## Tokenization
 
 Queries are comprised of zero or more tokens separated by white space. A token
-has a term and an optional operator. (A simple token has no operator; a
+has a term and an optional modifier. (A simple token has no modifier; a
 compound token does.) A term can be a single word or multiple words joined by
 spaces and contained within double quotes. For example `foo` and `"foo bar
-baz"` are both single terms. An operator is one or more alphanumeric characters
+baz"` are both single terms. A modifier is one or more alphanumeric characters
 followed by a colon and zero or more spaces.
 
     QUERY    := TOKEN*
-    TOKEN    := (OPERATOR ':' [[:space:]]*)? TERM
-    OPERATOR := [[:alnum:]]+
+    TOKEN    := (MODIFIER ':' [[:space:]]*)? TERM
+    MODIFIER := [[:alnum:]]+
     TERM     := '"' [^"]* '"' | [[:graph:]]+
 
 The following are all examples of tokens:
@@ -167,22 +167,22 @@ The following are all examples of tokens:
 * `foo: "bar baz"`
 
 (If you need a term to equal something that might otherwise be interpreted as
-an operator, you can enclose the term in double quotes, e.g., while `foo: bar`
+a modifier, you can enclose the term in double quotes, e.g., while `foo: bar`
 would be interpreted a single compound token, `"foo:" bar` would be treated as
 two distinct simple tokens, and `"foo: bar"` would be treated as a single
 simple token.)
 
 Tokens are passed to parsers as instances of the `SearchLingo::Token` class.
-`SearchLingo::Token` provides `#operator` and `#term` methods, but delegates
+`SearchLingo::Token` provides `#modifier` and `#term` methods, but delegates
 all other behavior to the String class. Consequently, when writing parsers, you
-have the option of either interacting with examining the operator and term
+have the option of either interacting with examining the modifier and term
 individually or treating the entire token as a String and processing it
 yourself. The following would produce identical results:
 
 ```ruby
 token = SearchLingo::Token.new('foo: "bar baz"')
 
-if token.operator == 'foo' then token.term end   # => 'bar baz'
+if token.modifier == 'foo' then token.term end   # => 'bar baz'
 token.match(/\Afoo:\s*"?(.+?)"?\z/) { |m| m[1] } # => 'bar baz'
 ```
 
@@ -234,9 +234,9 @@ classes:
 ```ruby
 module Parsers
   class IdParser
-    def initialize(table, operator = nil)
+    def initialize(table, modifier = nil)
       @table = table
-      @prefix = /#{operator}:\s*/ if operator
+      @prefix = /#{modifier}:\s*/ if modifier
     end
 
     def call(token)

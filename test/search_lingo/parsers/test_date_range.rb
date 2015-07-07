@@ -60,13 +60,13 @@ module SearchLingo::Parsers
       assert_nil parser.call '6/31/15-7/31/15'
     end
 
-    def test_parser_defined_with_operator
-      parser   = DateRangeParser.new(:table, :column, :operator)
+    def test_parser_defined_with_modifier
+      parser   = DateRangeParser.new(:table, :column, :modifier)
       june1    = Date.new(2015, 6, 1)
       june30   = Date.new(2015, 6, 30)
       expected = [:where, { table: { column: june1..june30 } }]
 
-      assert_equal expected, parser.call('operator: 6/1/15-6/30/15')
+      assert_equal expected, parser.call('modifier: 6/1/15-6/30/15')
       assert_nil parser.call '6/1/15-6/30/15'
     end
   end
