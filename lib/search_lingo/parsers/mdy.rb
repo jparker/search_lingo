@@ -26,12 +26,13 @@ module SearchLingo
         term.match /\A#{US_DATE}\z/ do |m|
           return Date.parse "#{m[:y]}/#{m[:m]}/#{m[:d]}" if m[:y]
 
+          ref   = relative_to
           day   = Integer(m[:d])
           month = Integer(m[:m])
-          year  = if month < relative_to.month || month == relative_to.month && day <= relative_to.day
-                    relative_to.year
+          year  = if month < ref.month || month == ref.month && day <= ref.day
+                    ref.year
                   else
-                    relative_to.year - 1
+                    ref.year - 1
                   end
 
           Date.new year, month, day

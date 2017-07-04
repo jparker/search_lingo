@@ -5,33 +5,55 @@ module SearchLingo
     class DateParser
       include MDY
 
-      def initialize(table, column, modifier = nil, **options)
-        @table    = table
-        @column   = column
-        @prefix   = %r{#{modifier}:\s*} if modifier
-
-        post_initialize **options
+      def initialize(column, modifier: nil)
+        @column = column
+        @prefix = %r{#{modifier}:[[:space:]]*} if modifier
       end
 
-      attr_reader :table, :column, :prefix
+      attr_reader :column, :prefix
 
-      # This implementation is specific to ActiveRecord::Base#where semantics.
-      # Explore an agnostic implementation or rename the DateParser class (and
-      # its descendants) to indicate that it is ActiveRecord-centric. If going
-      # the latter route, provide a Sequel-specific implementation as well.
+      # This implementation assumes @column is an AREL Attribute.
       def call(token)
-        token.match /\A#{prefix}(?<date>#{US_DATE})\z/ do |m|
-          date = parse m[:date]
-          [:where, { table => { column => date } }] if date
-        end
-      end
-
-      def post_initialize(**) # :nodoc:
+        parse_single_date(token)  ||
+          parse_date_range(token) ||
+          parse_lte_date(token)   ||
+          parse_gte_date(token)
       end
 
       def inspect # :nodoc:
-        '#<%s:0x%x @table=%s @column=%s @prefix=%s>' %
-          [self.class, object_id << 1, table.inspect, column.inspect, prefix.inspect]
+        '#<%s:0x%x @prefix=%s @column=%s>' %
+          [self.class, object_id << 1, prefix.inspect, column.inspect]
+      end
+
+      private
+
+      def parse_single_date(token)
+        token.match /\A#{prefix}(?<date>#{US_DATE})\z/ do |m|
+          date = parse(m[:date]) or return nil
+          [:where, column.eq(date)]
+        end
+      end
+
+      def parse_date_range(token)
+        token.match /\A#{prefix}(?<min>#{US_DATE})-(?<max>#{US_DATE})\z/ do |m|
+          min = parse(m[:min]) or return nil
+          max = parse(m[:max], relative_to: min.next_year) or return nil
+          [:where, column.in(min..max)]
+        end
+      end
+
+      def parse_lte_date(token)
+        token.match /\A#{prefix}-(?<date>#{US_DATE})\z/ do |m|
+          date = parse(m[:date]) or return nil
+          [:where, column.lteq(date)]
+        end
+      end
+
+      def parse_gte_date(token)
+        token.match /\A#{prefix}(?<date>#{US_DATE})-\z/ do |m|
+          date = parse(m[:date]) or return nil
+          [:where, column.gteq(date)]
+        end
       end
     end
   end

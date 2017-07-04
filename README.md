@@ -276,11 +276,10 @@ Additionally, there are parsers for handling closed date ranges (e.g.,
 `12/31/15`). Look at the files in `lib/search_lingo/parsers` for more details.
 
 The date parser are specifically designed to work with US-formatted dates. Time
-permitting, I will work on making them more flexible. As implemented they are
-also ActiveRecord-centric; this also needs to be reexamined reexamined, either
-by finding a more agnostic implementation or renaming the parser classes to
-indicate they are ActiveRecord-only implementations. (If going the latter
-route, a Sequel-specific implementation should also be provided.)
+permitting, I will work on making them more flexible.
+
+As implemented they generate queries using AREL. In the future, we should try
+generalizing this behavior to also support Sequel for generating queries.
 
 ## Development
 

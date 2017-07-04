@@ -21,36 +21,18 @@ module Parsers # :nodoc:
 end
 
 class JobSearch < SearchLingo::AbstractSearch # :nodoc:
+  parser SearchLingo::Parsers::DateParser.new Job.arel_table[:date]
   parser Parsers::IdParser.new Job.table_name
 
-  parser SearchLingo::Parsers::DateParser.new Job.table_name,
-    :date
-  parser SearchLingo::Parsers::DateRangeParser.new Job.table_name,
-    :date
-  parser SearchLingo::Parsers::OpenDateRangeParser.new Job.table_name,
-    :date, connection: Job.connection
-
   def default_parse(token)
-    [:where, 'jobs.name LIKE ?', "%#{token}%"]
+    [:where, Job.arel_table[:name].lower.like("%#{token}%")]
   end
 end
 
 class ReceiptSearch < SearchLingo::AbstractSearch # :nodoc:
-  parser Parsers::IdParser.new Receipt.table_name
-
-  parser SearchLingo::Parsers::DateParser.new Receipt.table_name,
-    :check_date
-  parser SearchLingo::Parsers::DateRangeParser.new Receipt.table_name,
-    :check_date
-  parser SearchLingo::Parsers::OpenDateRangeParser.new Receipt.table_name,
-    :check_date, connection: Receipt.connection
-
-  parser SearchLingo::Parsers::DateParser.new Receipt.table_name,
-    :post_date, 'posted'
-  parser SearchLingo::Parsers::DateRangeParser.new Receipt.table_name,
-    :post_date, 'posted'
-  parser SearchLingo::Parsers::OpenDateRangeParser.new Receipt.table_name,
-    :post_date, 'posted', connection: Receipt.connection
+  parser SearchLingo::Parsers::DateParser.new Receipt.arel_table[:check_date]
+  parser SearchLingo::Parsers::DateParser.new Receipt.arel_table[:post_date],
+    modifier: 'posted'
 
   parser do |token|
     token.match /\Aamount: (\d+(?:\.\d+)?)\z/ do |m|
@@ -59,19 +41,19 @@ class ReceiptSearch < SearchLingo::AbstractSearch # :nodoc:
   end
 
   def default_parse(token)
-    [:where, 'receipts.check_no LIKE ?', token]
+    [:where, Receipt.arel_table[:check_no].like(token)]
   end
 end
 
 search = JobSearch.new('6/4/15-6/5/15 id: 42 "foo bar"')
-search.results  # =>  Job
-                #       .where('jobs' => { date: Date.new(2015, 6, 4)..Date.new(2015, 6, 5) })
-                #       .where('jobs' => { id: '42' })
-                #       .where('jobs.name LIKE ?', '%foo bar%')
+search.results
+# => Job.where(Job.arel_table[:date].in(Date.new(2015,6,4)..Date.new(2015,6,5)))
+#       .where('jobs' => { id: '42' })
+#       .where(Job.arel_table[:name].lower.like('%foo bar%'))
 
 search = ReceiptSearch.new('-6/4/15 posted: 6/5/15- amount: 1000 123')
-search.results  # =>  Receipt
-                #       .where('"receipts"."check_date" <= ?', Date.new(2015, 6, 4))
-                #       .where('"receipts"."post_date" >= ?', Date.new(2015, 6, 5))
-                #       .where(receipts: { amount: '1000' })
-                #       .where('receipts.check_no LIKE ?', 123)
+search.results
+# => Receipt.where(Receipt.arel_table[:check_date].lteq(Date.new(2015,6,4)))
+#           .where(Receipt.arel_table[:post_date].gteq(Date.new(2015,6,5)))
+#           .where(receipts: { amount: '1000' })
+#           .where(Receipt.arel_table[:check_no].matches('123'))
