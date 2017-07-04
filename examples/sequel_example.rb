@@ -31,7 +31,7 @@ end
 class CategoryParser # :nodoc:
   def call(token)
     if token.modifier == 'cat'
-      [:where, { category__name: token.term }]
+      [:where, { Sequel.qualify('category', 'name') => token.term }]
     end
   end
 end
@@ -39,12 +39,20 @@ end
 class TaskSearch < SearchLingo::AbstractSearch # :nodoc:
   parser CategoryParser.new
 
+  # Match categories with priority less than or greater than a given value.
+  #
+  # <2 => Categories with priority < 2
+  # >5 => Categories with priority > 5
   parser do |token|
     token.match /\A([<>])([[:digit:]]+)\z/ do |m|
-      [:where, ->{ priority.send m[1], m[2] }]
+      [:where, Sequel.expr { priority.send m[1], m[2] }]
     end
   end
 
+  # Match tasks with a given due_date.
+  #
+  # 7/4/1776 => Tasks with due_date == Date.new(1776, 7, 4)
+  # 7/4/17   => Tasks with due_date == Date.new(2017, 7, 4)
   parser do |token|
     token.match %r{\A(?<m>\d{1,2})/(?<d>\d{1,2})/(?<y>\d{2}\d{2}?)\z} do |m|
       begin
@@ -54,8 +62,12 @@ class TaskSearch < SearchLingo::AbstractSearch # :nodoc:
     end
   end
 
+  # Match tasks with names that contain a given term.
+  #
+  # pay bills   => Match tasks with names like "pay bills", "pay bills by today"
+  # brush teeth => Match tasks with names like "brush teeth", "brush teeth and floss"
   def default_parse(token)
-    [:where, 'tasks.name LIKE ?', "%#{token.term}%"]
+    [:where, Sequel.lit('tasks.name LIKE ?', "%#{token.term}%")]
   end
 
   def scope
