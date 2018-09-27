@@ -5,6 +5,16 @@ module SearchLingo
     class DateParser
       include MDY
 
+      ##
+      # Instantiates a new DateParser object.
+      #
+      # The required argument +column+ should be an Arel attribute.
+      #
+      # If present, the optional argument +modifier+ will be used as the
+      # operator which precedes the date term.
+      #
+      # DateParser.new Booking.arel_table[:date]
+      # DateParser.new Contract.arel_table[:date], modifier: 'contract'
       def initialize(column, modifier: nil)
         @column = column
         @prefix = %r{#{modifier}:[[:space:]]*} if modifier
@@ -12,7 +22,13 @@ module SearchLingo
 
       attr_reader :column, :prefix
 
-      # This implementation assumes @column is an AREL Attribute.
+      ##
+      # Attempts to parse the token as a date, closed date range, or open date
+      # range.
+      #
+      # Examples of single dates are 7/14, 7/14/17, and 7/14/2017.
+      # Examples of closed date ranges are 1/1-6/30 and 7/1/16-6/30/18.
+      # Examples of open date ranges are -6/30 and 7/1/17-.
       def call(token)
         parse_single_date(token)  ||
           parse_date_range(token) ||

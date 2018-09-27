@@ -13,8 +13,8 @@ module SearchLingo
       # Returns a +Date+ object for the date represented by +term+. Returns
       # +nil+ if +term+ can not be parsed.
       #
-      # If the year has two digits, it will be expanded into a four-digit by
-      # +Date.parse+.
+      # If the year has two digits, it will be implicitly expanded into a
+      # four-digit year by +Date.parse+. Otherwise it will be used as is.
       #
       # If the year is omitted, it will be inferred using +relative_to+ as a
       # reference date. In this scenario, the resulting date will always be

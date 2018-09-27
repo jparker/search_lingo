@@ -113,6 +113,7 @@ module SearchLingo
         result = parser.call token
         throw :match, result if result
       end
+      nil
     end
 
     ##
