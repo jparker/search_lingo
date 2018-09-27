@@ -62,7 +62,13 @@ module SearchLingo
     ##
     # Returns the results of executing the search.
     def results
-      @results ||= conditions.inject(scope) do |query, condition|
+      @results ||= load_results
+    end
+
+    ##
+    # Constructs and performs the query.
+    def load_results
+      conditions.inject(scope) do |query, condition|
         query.public_send(*condition)
       end
     end
