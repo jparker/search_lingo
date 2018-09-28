@@ -23,14 +23,14 @@ module SearchLingo
       assert_empty cls.parsers
     end
 
-    def test_parser_with_an_object
+    def test_parser_with_callable_object
       parser = ->{}
       cls = Class.new AbstractSearch
       cls.parser parser
       assert_equal [parser], cls.parsers
     end
 
-    def test_parser_with_a_block
+    def test_parser_with_block
       cls = Class.new AbstractSearch
       cls.parser { }
       assert_kind_of Proc, cls.parsers.first
@@ -39,7 +39,13 @@ module SearchLingo
     def test_parser_with_no_arguments
       cls = Class.new AbstractSearch
       error = assert_raises(ArgumentError) { cls.parser }
-      assert_equal 'parse must be called with callable or block', error.message
+      assert_equal 'parse must be called with callable OR block', error.message
+    end
+
+    def test_parser_with_callable_object_and_block
+      cls = Class.new AbstractSearch
+      error = assert_raises(ArgumentError) { cls.parser(->{}) { } }
+      assert_equal 'parse must be called with callable OR block', error.message
     end
 
     def test_descendents_of_abstract_class_have_distinct_parsers

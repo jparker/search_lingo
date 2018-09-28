@@ -41,16 +41,12 @@ module SearchLingo
     #       # return something
     #     end
     #   end
-    def self.parser(callable = nil, &block)
-      unless callable || block_given?
-        raise ArgumentError, 'parse must be called with callable or block'
+    def self.parser(parser = nil, &block)
+      callable = parser.respond_to?(:call)
+      if (callable && block_given?) || (!callable && !block_given?)
+        raise ArgumentError, 'parse must be called with callable OR block'
       end
-      if callable && block_given?
-        # TODO: should this raise an error instead?
-        warn "WARNING: parse called with callable and block (#{caller.first}"
-      end
-
-      parsers << (callable || block)
+      parsers << (parser || block)
     end
 
     ##
