@@ -23,27 +23,27 @@ module SearchLingo
     ##
     # Adds a new parser to the list of parsers used by this class.
     #
-    # The parser to be added can be passed in as an argument which responds to
-    # +#call+ or as a block. Raises +ArgumentError+ if neither a callable
-    # object nor a block is passed in. If both a callable argument and a block
-    # are passed in, a warning will be displayed, the callable argument will be
-    # used as the parser; the block will be ignored.
+    # The parser may be given as an anonymous block or as any argument which
+    # responds to +#call+. The parser will be send +#call+ with a single
+    # argument which will be a token from the query string.
+    #
+    # If both a callable object and a block are given, or if neither a callable
+    # object nor a block are given, an +ArgumentError+ will be raised.
     #
     #   class MyParser
-    #     def call
+    #     def call(token)
     #       # return something
     #     end
     #   end
     #
     #   class MySearch < SearchLingo::AbstractSearch
     #     parser MyParser.new
-    #     parser do
+    #     parser do |token|
     #       # return something
     #     end
     #   end
     def self.parser(parser = nil, &block)
-      callable = parser.respond_to?(:call)
-      if (callable && block_given?) || (!callable && !block_given?)
+      unless block_given? ^ parser.respond_to?(:call)
         raise ArgumentError, 'parse must be called with callable OR block'
       end
       parsers << (parser || block)
@@ -87,11 +87,16 @@ module SearchLingo
     def conditions
       tokenizer.inject([]) do |conditions, token|
         conditions << catch(:match) do
+          # 1. Try each parser with the token until :match is thrown.
           parse token
+
+          # 2. If :match not thrown and token is compound, simplify and try again.
           if token.compound?
             token = tokenizer.simplify
             parse token
           end
+
+          # 3. If :match still not thrown, fallback on default parser.
           default_parse token
         end
       end

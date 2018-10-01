@@ -24,28 +24,34 @@ module SearchLingo
     end
 
     def test_parser_with_callable_object
-      parser = ->{}
+      parser = ->(_) { :woof }
       cls = Class.new AbstractSearch
       cls.parser parser
-      assert_equal [parser], cls.parsers
+      assert_equal :woof, cls.parsers.first.call(:blerg)
     end
 
     def test_parser_with_block
       cls = Class.new AbstractSearch
-      cls.parser { }
-      assert_kind_of Proc, cls.parsers.first
+      cls.parser { |_| :woof }
+      assert_equal :woof, cls.parsers.first.call(:blerg)
     end
 
     def test_parser_with_no_arguments
       cls = Class.new AbstractSearch
-      error = assert_raises(ArgumentError) { cls.parser }
-      assert_equal 'parse must be called with callable OR block', error.message
+      err = assert_raises(ArgumentError) do
+        cls.parser
+      end
+      assert_equal 'parse must be called with callable OR block', err.message
     end
 
     def test_parser_with_callable_object_and_block
       cls = Class.new AbstractSearch
-      error = assert_raises(ArgumentError) { cls.parser(->{}) { } }
-      assert_equal 'parse must be called with callable OR block', error.message
+      err = assert_raises(ArgumentError) do
+        cls.parser(->(_) { :woof }) do
+          :woof
+        end
+      end
+      assert_equal 'parse must be called with callable OR block', err.message
     end
 
     def test_descendents_of_abstract_class_have_distinct_parsers
