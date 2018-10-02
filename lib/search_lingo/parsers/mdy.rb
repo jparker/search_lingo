@@ -24,7 +24,7 @@ module SearchLingo
       # Available as both a class method and an instance method.
       def parse(term, relative_to: Date.today)
         term.match /\A#{US_DATE}\z/ do |m|
-          return Date.parse '%d/%d/%d' % m.values_at(:y, :m, :d) if m[:y]
+          return Date.parse "#{m[:y]}/#{m[:m]}/#{m[:d]}" if m[:y]
 
           ref   = relative_to
           day   = Integer(m[:d])
