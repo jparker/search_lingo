@@ -9,8 +9,8 @@ Gem::Specification.new do |spec|
   spec.authors       = ["John Parker"]
   spec.email         = ["jparker@urgetopunt.com"]
 
-  spec.summary       = %q{Framework for building simple query languages}
-  spec.description   = %q{Framework for building simple query language for converting user queries into database queries.}
+  spec.summary       = %q{Framework for defining and parsing search queries.}
+  spec.description   = %q{SearchLingo is a simple framework for defining simple query languages and translating them into application-specific queries.}
   spec.homepage      = "https://github.com/jparker/search_lingo"
   spec.license       = "MIT"
 
