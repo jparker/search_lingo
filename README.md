@@ -15,6 +15,52 @@ project. Although originally designed to work with basic searching with
 ActiveRecord models, it should be usable with other data stores provided they
 let you build complex queries by chaining together simpler queries.
 
+## Upgading
+
+Version 2 introduces a breaking change to the parsing workflow. In older
+versions, parsers were sent one argument (the token), and were expected to
+return an array that would be sent to the scope using `#public_send`. The new
+version sends the token and the filter chain to the parsers, and they are
+expected to append methods to the filter chain and return the result. This
+change makes it possible for parsers to make more than one addition to the
+filter chain.
+
+After upgrading, your parsers should be upgraded as follows:
+
+```ruby
+# Before
+parser do |token|
+  if token.modifier == 'something'
+    [:where, { column: token.term }]
+  end
+end
+
+# After
+parser do |token, chain|
+  if token.modifier == 'something'
+    chain.where column: token.term
+  end
+end
+```
+
+Similar changes will need to be made to your `#default_parse` implementation.
+
+```ruby
+# Before
+def default_parse(token)
+  [:where, { column: token }]
+end
+
+# After
+def default_parse(token, chain)
+  chain.where column: token
+end
+```
+
+If you provided your own implementation of `#scope` in your search class to
+ensure that certain relations were joined, you may want to revisit the decision
+in case the joins can be added only if needed by a particular parser.
+
 ## Installation
 
 Add this line to your application's Gemfile:
@@ -41,17 +87,16 @@ class Task < ActiveRecord::Base
 end
 
 class TaskSearch < SearchLingo::AbstractSearch
-  def default_parse(token)
-    [:where, 'tasks.name LIKE ?', "%#{token}%"]
+  def default_parse(token, chain)
+    chain.where 'name LIKE ?', "%#{token}%"
   end
 end
 
-TaskSearch.new('foo bar', Task).results
-# => Task.where('tasks.name LIKE ?', '%foo%')
-# ->   .where('tasks.name LIKE ?', '%bar%')
+TaskSearch.new('foo bar', Task.all).results
+# => Task.where('name LIKE ?', '%foo%').where('name LIKE ?', '%bar%')
 
-TaskSearch.new('"foo bar"', Task).results
-# => Task.where('tasks.name LIKE ?', '%foo bar%')
+TaskSearch.new('"foo bar"', Task.all).results
+# => Task.where('name LIKE ?', '%foo bar%')
 ```
 
 And here is a more complex example.
@@ -68,91 +113,96 @@ end
 class Task < ActiveRecord::Base
   belongs_to :category
   belongs_to :user
-  enum state: [:incomplete, :complete]
+  enum state: %i[incomplete complete]
 end
 
 class TaskSearch < SearchLingo::AbstractSearch
-  parser do |token|
-    token.match /\Acategory:\s*"?(.*?)"?\z/ do |m|
-      [:where, { categories: { name: m[1] } }]
+  parser do |token, chain|
+    token.match(/\Ais:\s*(?<state>(?:in)?complete)\z/) do |m|
+      # Appends a named scope defined by `enum` to filter chain
+      chain.public_send m[:state].to_sym
     end
   end
 
-  parser do |token|
-    token.match /\Ais:\s*(?<state>(?:in)?complete)\z/ do |m|
-      [m[:state].to_sym]
+  parser do |token, chain|
+    if token.modifier == 'cat'
+      # Appends a join and a where clause to the filter chain.
+      chain.joins(:category).where categories: { name: token.term }
     end
   end
 
-  parser do |token|
-    token.match /\A([<>])([[:digit:]]+)\z/ do |m|
-      [:where, 'tasks.priority #{m[1]} ?', m[2]]
+  parser do |token, chain|
+    token.match(/\A(?<op>[<>])(?<prio>[[:digit:]]+)\z/) do |m|
+      priority = Task.arel_table[:priority]
+      if m[:op] == '<'
+        chain.where priority.lt m[:prio]
+      else
+        chain.where priority.gt m[:prio]
+      end
     end
   end
 
-  def default_parse(token)
-    [:where, 'tasks.name LIKE ?', "%#{token}%"]
-  end
-
-  def scope
-    @scope.includes(:category).references(:category)
+  def default_parse(token, chain)
+    chain.where Task.arel_table[:name].matches "%#{token}%"
   end
 end
 
-TaskSearch.new('category: "foo bar" <2 baz is: incomplete', Task).results
-# => Task.includes(:category).references(:category)
-# ->   .where(categories: { name: 'foo bar' })
-# ->   .where('tasks.priority < ?', 2)
-# ->   .where('tasks.name LIKE ?', '%baz%')
+TaskSearch.new('cat: foo <2 "bar baz" is: incomplete', Task.all).results
+# => Task.all
+# ->   .joins(:category)
+# ->   .where(categories: { name: 'foo' })
+# ->   .where(Task.arel_table[:priority].gt(2))
+# ->   .where(Task.arel_table[:name].matches('%bar baz%'))
 # ->   .incomplete
 
-TaskSearch.new('category: "foo bar"', User.find(42).tasks).results
-# => Task.includes(:category).references(:category)
-# ->   .where(user_id: 42)
-# ->   .where(categories: { name: 'foo bar' })
+user = User.find 42
+TaskSearch.new('is: complete "foo bar"', user.tasks).results
+# => user.tasks.complete.where(Task.arel_table[:name].matches('%foo bar%'))
 ```
 
-Create a class which inherits from `SearchLingo::AbstractSearch`. Provide an
-implementation of `#default_parse` in that class. Register parsers for specific
-types of search tokens using the parser class method.
+A search class should inherit from `SearchLingo::AbstractSearch`, and it should
+provide its own implementation of `#default_parse`. Register additional parsers
+with `.parser` as needed.
 
-Instantiate your search class by passing in the query string and the scope on
-which to perform the search. Use the `#results` method to compile and execute
-the search and return the results.
+Instantiate your search class with a query string and the scope on which to
+search. Send that instance `#results` to compile and execute the search and
+return the results.
 
 ## How It Works
 
-A search is instantiated with a query string and a search scope (commonly an
+A search is instantiated with a query string and a search scope (such as an
 ActiveRecord model). The search breaks the query string down into a series of
-tokens, and each token is processed by a declared series of parsers. If a
-parser succeeds, processing immediately advances to the next token. If none of
-the declared parsers succeeds, and the token is compound — that is, the token
-is composed of a modifier and a term (e.g., `foo: bar`), the token is
-simplified and then processed by the declared parsers again. If the second pass
-also fails, then the (now simplified) token falls through to the
-`#default_parse` method defined by the search class. This method should be
-implemented in such a way that it always "succeeds" — always returning a Symbol
-or an Array that can be splatted and sent to the search scope.
+tokens and parses them, composing the search query by chaining method calls
+onto the initial search scope.
+
+A search class registers zero or more special-case parsers. Processing of each
+token runs through the parsers in the order in which they were registered.
+Parsing of a single token halts when a parser succeeds. When a parser succeeds,
+it should append to the search scope a method call which implements the filter
+for the given token. When a parser fails, it should return a `nil` or `false`.
+
+If all of the registered parsers fail, and the token is compound, it is
+simplified and reprocessed by the same set of parsers (see "Tokenization" for
+more information).
+
+If still no parser has successfully parsed the token, it falls back on the
+`#default_parse`.
 
 ## Search Classes
 
-Search classes should inherit from `SearchLingo::AbstractSearch`, and they must
-provide their own implementation of `#default_parse`. Optionally, a search
-class may also use the parse class method to add specialized parsers for
-handling tokens that match specific patterns. As each token is processed, the
-search class will first run through the specialized parsers. If none of them
-succeed, it will fall back on the `#default_parse` method. See the section
-"Parsing" for more information on how parsers work and how they should be
-structured.
+Search classes should inherit from `SearchLingo::AbstractSearch`. They must
+provide their own implementation of `#default_parse` which should probably, at
+a minimum, return the current filter chain. Custom parsers can be registered
+with the `.parser` class method. Custom parsers are tried in the same order in
+which they are defined. Bear this in mind when defining parsers.
 
 ## Tokenization
 
 Queries are comprised of zero or more tokens separated by white space. A token
-has a term and an optional modifier. (A simple token has no modifier; a
-compound token does.) A term can be a single word or multiple words joined by
-spaces and contained within double quotes. For example `foo` and `"foo bar
-baz"` are both single terms. A modifier is one or more alphanumeric characters
-followed by a colon and zero or more spaces.
+is an optional modifier followed by a term. A modifier is one or more
+alphanumeric characters and is followed by a colon. A term can be a single word
+or multiple words contained within double quotes (both `foo` and `"foo bar
+baz"` are valid single terms).
 
     QUERY    := TOKEN*
     TOKEN    := (MODIFIER ':' [[:space:]]*)? TERM
@@ -190,19 +240,19 @@ token.match(/\Afoo:\s*"?(.+?)"?\z/) { |m| m[1] } # => 'bar baz'
 
 ## Parsers
 
-Any object that can respond to the `#call` method can be used as a parser. If
-the parser succeeds, it should return an Array of arguments that can be sent to
-the query object using `#public_send`, e.g., `[:where, { id: 42 }]`. If the
-parser fails, it should return a falsey value.
+Any object that responds to `#call` can be used as a parser. It will be sent
+two arguments: the token and the current filter chain. If a parser succeeds, it
+should append one or more methods to the filter chain and return the result. If
+a parser fails, it should return a falsey value (usually `nil`).
 
 For very simple parsers which need not be reusable, you can pass the parsing
 logic to the parser method as a block:
 
 ```ruby
 class MySearch < SearchLingo::AbstractSearch
-  parser do |token|
-    token.match /\Aid:[[:space:]]*([[:digit:]]+)\z/ do |m|
-      [:where, { id: m[1] }]
+  parser do |token, chain|
+    token.match(/\Aid:[[:space:]]*([[:digit:]]+)\z/) do |m|
+      chain.where id: m[1]
     end
   end
 end
@@ -212,9 +262,9 @@ If you want to re-use a parser, you could implement it as a lambda:
 
 ```ruby
 module Parsers
-  ID_PARSER = lambda do |token|
-    token.match h/\Aid:[[:space:]]*([[:digit:]]+)\z/ do |m|
-      [:where, { id: m[1] }]
+  ID_PARSER = lambda do |token, chain|
+    token.match(/\Aid:[[:space:]]*([[:digit:]]+)\z/) do |m|
+      chain.where id: m[1]
     end
   end
 end
@@ -228,37 +278,75 @@ class MyOtherSearch < SearchLingo::AbstractSearch
 end
 ```
 
-Finally, for the most complicated cases, you could implement parsers as
-classes:
+For more complex cases, you may choose to implement a parser as its own class.
 
 ```ruby
 module Parsers
-  class IdParser
-    def initialize(table, modifier = nil)
-      @table = table
-      @prefix = /#{modifier}:\s*/ if modifier
+  class DateParser
+    US_DATE = %r{(?<m>\d{1,2})/(?<d>\d{1,2})/(?<y>\d{4})}
+
+    attr_reader :column
+
+    def initialize(column)
+      @column = column
     end
 
-    def call(token)
-      token.match /\A#{@prefix}([[:digit:]]+)\z/ do |m|
-        [:where, { @table => { id: m[1] } }]
+    def call(token, chain)
+      catch :halt do
+        parse_simple_date token, chain
+        parse_date_range token, chain
+        parse_open_date_range token, chain
       end
+    end
+
+    private
+
+    # Parses simple dates like "10/2/2018"
+    def parse_simple_date(token, chain)
+      token.match(/\A#{US_DATE}\z/) do |m|
+        date = Date.parse '%04d-%02d-%02d' % m.values_at(:y, :m, :d)
+        throw :halt, chain.where(column.eq(date))
+      end
+    rescue ArgumentError
+      # Raised by Date.parse for invalid dates
+    end
+
+    # Parses date ranges like "10/1/2018-10/31/2018"
+    def parse_date_range(token, chain)
+      token.match(/\A#{US_DATE}-#{US_DATE}\z/) do |m|
+        min = Date.parse '%04d-%02d-%02d' % m.values_at(3, 1, 2)
+        max = Date.parse '%04d-%02d-%02d' % m.values_at(6, 4, 3)
+        throw :halt, chain.where(column.in(min..max))
+      end
+    rescue ArgumentError
+      # Raised by Date.parse for invalid dates
+    end
+
+    # Parses open-ended date ranges like "10/1/2018-" or "-10/31/2018"
+    def parse_open_date_range(token, chain)
+      token.match(/\A(?<min>#{US_DATE})-|-(?<max>#{US_DATE})\z) do |m|
+        if m[:min]
+          date = Date.parse '%04d-%02d-%02d' % m.values_at(:y, :m, :d)
+          throw :halt, chain.where(column.gteq(date))
+        else
+          date = Date.parse '%04d-%02d-%02d' % m.values_at(:y, :m, :d)
+          throw :halt, chain.where(column.lteq(date))
+        end
+      end
+    rescue ArgumentError
+      # Raised by Date.pares for invalid dates
     end
   end
 end
 
 class EventSearch < SearchLingo::AbstractSearch
-  # matches "42" and adds events.id=42 as a condition
-  parser Parsers::IdParser.new Event.table_name
-
-  # matches "category: 42" and adds categories.id as a condition
-  parser Parsers::IdParser.new Category.table_name, 'category'
-end
-
-class CategorySearch < SearchLingo::AbstractSearch
-  parser Parsers::IdParser.new :categories
+  parser Parsers::DateParser.new
 end
 ```
+
+(Date parsing was a convenient example of a parser complex enough to warrant
+its own class, but a date parser is included with the gem. See "Date Parsers"
+below for more information.)
 
 ### Date Parsers
 

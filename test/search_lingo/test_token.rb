@@ -46,23 +46,16 @@ module SearchLingo
     end
 
     def test_match_is_delegated_to_original_string
-      string = Minitest::Mock.new
-      token  = Token.new string
-      string.expect :match, nil, [/foo/]
-
+      string = mock('string')
+      string.expects(:match).with(/foo/)
+      token = Token.new string
       token.match /foo/
-
-      string.verify
     end
 
     def test_to_s_is_delegated_to_original_string
-      string = Minitest::Mock.new
+      string = stub(to_s: 'foo')
       token  = Token.new string
-      string.expect :to_s, 'foo'
-
-      token.to_s
-
-      string.verify
+      assert_equal 'foo', token.to_s
     end
   end
 end
