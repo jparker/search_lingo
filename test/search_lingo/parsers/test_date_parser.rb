@@ -113,23 +113,6 @@ module SearchLingo::Parsers
       end
     end
 
-    def test_modifier
-      chain = stub(where: 'blerg')
-      column = mock('column')
-      column.expects(:eq).with(Date.new(2017, 7, 4))
-      column.expects(:in).with(Date.new(2017, 7)..Date.new(2017, 7, 31))
-      column.expects(:gteq).with(Date.new(2017, 7, 31))
-      parser = DateParser.new column, modifier: 'mod'
-
-      assert_nil parser.call '7/4/2017', chain
-      assert_nil parser.call '7/1/2017-7/31/2017', chain
-      assert_nil parser.call '7/31/2017-', chain
-
-      refute_nil parser.call 'mod: 7/4/2017', chain
-      refute_nil parser.call 'mod: 7/1/2017-7/31/2017', chain
-      refute_nil parser.call 'mod: 7/31/2017-', chain
-    end
-
     def test_invalid_date
       chain = stub(where: 'blerg')
       column = mock('column')
@@ -147,6 +130,33 @@ module SearchLingo::Parsers
       assert_nil parser.call '7/1/2017-7/32/2017', chain
       assert_nil parser.call '-7/32/2017', chain
       assert_nil parser.call '7/32/2017-', chain
+    end
+
+    def test_modifier
+      chain = stub(where: 'blerg')
+      column = mock('column')
+      column.expects(:eq).with(Date.new(2017, 7, 4))
+      column.expects(:in).with(Date.new(2017, 7)..Date.new(2017, 7, 31))
+      column.expects(:gteq).with(Date.new(2017, 7, 31))
+      parser = DateParser.new column, modifier: 'mod'
+
+      assert_nil parser.call '7/4/2017', chain
+      assert_nil parser.call '7/1/2017-7/31/2017', chain
+      assert_nil parser.call '7/31/2017-', chain
+
+      refute_nil parser.call 'mod: 7/4/2017', chain
+      refute_nil parser.call 'mod: 7/1/2017-7/31/2017', chain
+      refute_nil parser.call 'mod: 7/31/2017-', chain
+    end
+
+    def test_append_to_chain
+      chain  = mock('scope', where: 'blerg')
+      chain.expects(:joins).with(:relation).returns(chain)
+      column = stub('column', eq: nil)
+      parser = DateParser.new column do |chain|
+        chain.joins(:relation)
+      end
+      parser.call '10/3', chain
     end
   end
 end
