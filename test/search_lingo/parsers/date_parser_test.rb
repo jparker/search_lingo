@@ -6,7 +6,7 @@ require 'minitest_helper'
 module SearchLingo
   module Parsers
     # rubocop:disable Metrics/ClassLength
-    class TestDateParser < Minitest::Test # :nodoc:
+    class DateParserTest < Minitest::Test # :nodoc:
       def test_mmddyyyy
         column = mock('column')
         column.expects(:eq).with(Date.new(2017, 7, 4))

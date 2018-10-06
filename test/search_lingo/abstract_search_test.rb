@@ -4,7 +4,7 @@ require 'search_lingo/abstract_search'
 require 'minitest_helper'
 
 module SearchLingo
-  class TestAbstractSearch < Minitest::Test # :nodoc:
+  class AbstractSearchTest < Minitest::Test # :nodoc:
     def test_query_reader
       search = AbstractSearch.new 'foo', nil
       assert_equal 'foo', search.query

@@ -6,7 +6,7 @@ require 'search_lingo'
 
 require File.expand_path '../../examples/sequel_example', __dir__
 
-class TestSequelSearch < Minitest::Test # :nodoc:
+class SequelSearchTest < Minitest::Test # :nodoc:
   attr_reader :db
 
   def setup
