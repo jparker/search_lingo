@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 require 'search_lingo/token'
 require 'minitest_helper'
 
@@ -49,7 +51,7 @@ module SearchLingo
       string = mock('string')
       string.expects(:match).with(/foo/)
       token = Token.new string
-      token.match /foo/
+      token.match(/foo/)
     end
 
     def test_to_s_is_delegated_to_original_string

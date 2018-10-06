@@ -1,0 +1,14 @@
+AllCops:
+  TargetRubyVersion: 2.3.0
+Layout/AlignParameters:
+  Enabled: false
+Metrics/AbcSize:
+  Max: 25
+Style/AndOr:
+  EnforcedStyle: conditionals
+Style/TrailingCommaInArrayLiteral:
+  Enabled: false
+Style/TrailingCommaInHashLiteral:
+  Enabled: false
+Style/NumericPredicate:
+  Enabled: false

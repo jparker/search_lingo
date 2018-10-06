@@ -1,9 +1,17 @@
+# frozen-string-literal: true
+
 require 'forwardable'
 require 'strscan'
 require 'search_lingo/constants'
 require 'search_lingo/token'
 
 module SearchLingo
+  ##
+  # Tokenizer breaks down a query string into individual tokens.
+  #
+  #   Tokenizer.new 'foo'
+  #   Tokenizer.foo 'foo "bar baz"'
+  #   Tokenizer.foo 'foo "bar baz" froz: quux'
   class Tokenizer
     include Enumerable
     extend Forwardable
@@ -30,9 +38,7 @@ module SearchLingo
     def each
       return to_enum(__callee__) unless block_given?
 
-      until scanner.eos?
-        yield self.next
-      end
+      yield self.next until scanner.eos?
     end
 
     ##
@@ -42,6 +48,7 @@ module SearchLingo
       scanner.skip DELIMITER
       token = scanner.scan COMPOUND_TOKEN
       raise StopIteration unless token
+
       Token.new token
     end
 

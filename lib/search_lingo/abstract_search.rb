@@ -1,6 +1,37 @@
+# frozen-string-literal: true
+
 require 'search_lingo/tokenizer'
 
 module SearchLingo
+  ##
+  # AbstractSearch is an abstract implementation from which search classes
+  # should inherit.
+  #
+  # Search classes are instantiated with a query string and a default scope on
+  # which to perform the search.
+  #
+  # Child classes must implement the #default_parse instance method, and they
+  # may optionally register one or more parsers.
+  #
+  #   class MySearch < SearchLingo::AbstractSearch
+  #     def default_parse(token, chain)
+  #       chain.where attribute: token.term
+  #     end
+  #   end
+  #
+  #   class MyOtherSearch < SearchLingo::AbstractSearch
+  #     parser SearchLingo::Parsers::DateParser.new Job.arel_table[:date]
+  #
+  #     parser do |token, chain|
+  #       token.match(/\Aid: [[:space:]]* (?<id>[[:digit:]]+)\z/x) do |m|
+  #         chain.where id: m[:id]
+  #       end
+  #     end
+  #
+  #     def default_parse(token, chain)
+  #       chain.where Job.arel_table[:name].matches "%#{token.term}%"
+  #     end
+  #   end
   class AbstractSearch
     attr_reader :query, :scope
 
@@ -8,7 +39,9 @@ module SearchLingo
     # Instantiates a new search object. +query+ is the string that is to be
     # parsed and compiled into an actual query. If +query+ is falsey, an empty
     # string will be used. +scope+ is the object to which the compiled query
-    # should be sent, e.g., an +ActiveRecord+ model.
+    # should be sent, e.g., an +ActiveRecord::Relation+.
+    #
+    #   MySearchClass.new 'foo bar: baz "froz quux"', Task.all
     def initialize(query, scope)
       @query = query || ''
       @scope = scope
@@ -46,6 +79,7 @@ module SearchLingo
       unless block_given? ^ parser.respond_to?(:call)
         raise ArgumentError, 'parse must be called with callable OR block'
       end
+
       parsers << (parser || block)
     end
 
@@ -115,7 +149,7 @@ module SearchLingo
     # This is a skeletal implementation that raises +NotImplementedError+.
     # Child classes should provide their own implementation. At a minimum, that
     # implementation should return +chain+. (Doing so would ignore +token+.)
-    def default_parse(token, chain)
+    def default_parse(_token, _chain)
       raise NotImplementedError,
         "#default_parse must be implemented by #{self.class}"
     end

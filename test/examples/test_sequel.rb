@@ -1,8 +1,10 @@
+# frozen-string-literal: true
+
 require 'minitest_helper'
 require 'logger'
 require 'search_lingo'
 
-require File.expand_path File.join('..', '..', 'examples', 'sequel_example'), __dir__
+require File.expand_path '../../examples/sequel_example', __dir__
 
 class TestSequelSearch < Minitest::Test # :nodoc:
   attr_reader :db
@@ -19,14 +21,14 @@ class TestSequelSearch < Minitest::Test # :nodoc:
   end
 
   def test_category_parser
+    task_name = Sequel.qualify :tasks, :name
     search = TaskSearch.new 'cat: spanish', db[:tasks]
-    assert_equal %w[uno dos],
-      search.results.select(Sequel.qualify(:tasks, :name)).map(:name)
+    assert_equal %w[uno dos], search.results.select(task_name).map(:name)
   end
 
   def test_priority_parser
     search = TaskSearch.new 'prio<2', db[:tasks]
-    assert_equal %w[one uno], search.results.map { |row| row[:name] }
+    assert_equal(%w[one uno], search.results.map { |row| row[:name] })
   end
 
   def test_due_date_parser
@@ -35,26 +37,26 @@ class TestSequelSearch < Minitest::Test # :nodoc:
   end
 
   def test_multiple_conditions
+    task_name = Sequel.qualify :tasks, :name
     search = TaskSearch.new 'cat: english prio>1', db[:tasks]
-    assert_equal ['two'],
-      search.results.select(Sequel.qualify(:tasks, :name)).map(:name)
+    assert_equal ['two'], search.results.select(task_name).map(:name)
   end
 
   def test_implicit_scope_filter
-    spanish_tasks = db[:tasks].join(:categories, id: :category_id)
-      .where(Sequel.qualify(:categories, :name) => 'spanish')
-    search = TaskSearch.new 'prio>1', spanish_tasks
-    assert_equal ['dos'],
-      search.results.select(Sequel.qualify(:tasks, :name)).map(:name)
+    category_name = Sequel.qualify :categories, :name
+    task_name = Sequel.qualify :tasks, :name
+    scope = db[:tasks].join(:categories, id: :category_id)
+                      .where(category_name => 'spanish')
+    search = TaskSearch.new 'prio>1', scope
+    assert_equal ['dos'], search.results.select(task_name).map(:name)
   end
 
   def connect_db
     @db = Sequel.sqlite
-    if ENV['LOG_TO_STDOUT']
-      @db.loggers << Logger.new(STDOUT)
-    end
+    @db.loggers << Logger.new(STDOUT) if ENV['LOG_TO_STDOUT']
   end
 
+  # rubocop:disable Metrics/MethodLength
   def create_tables
     db.create_table :categories do
       primary_key :id
@@ -69,15 +71,30 @@ class TestSequelSearch < Minitest::Test # :nodoc:
       Date :due_date, null: false
     end
   end
+  # rubocop:enable Metrics/MethodLength
 
+  # rubocop:disable Metrics/MethodLength
   def load_seed_data
     db[:categories].insert(name: 'english').tap do |id|
-      db[:tasks].insert category_id: id, name: 'one', priority: 1, due_date: Date.new(2015)
-      db[:tasks].insert category_id: id, name: 'two', priority: 2, due_date: Date.new(2015, 2)
+      db[:tasks].insert category_id: id,
+                        name: 'one',
+                        priority: 1,
+                        due_date: Date.new(2015)
+      db[:tasks].insert category_id: id,
+                        name: 'two',
+                        priority: 2,
+                        due_date: Date.new(2015, 2)
     end
     db[:categories].insert(name: 'spanish').tap do |id|
-      db[:tasks].insert category_id: id, name: 'uno', priority: 1, due_date: Date.new(2015)
-      db[:tasks].insert category_id: id, name: 'dos', priority: 2, due_date: Date.new(2015, 2)
+      db[:tasks].insert category_id: id,
+                        name: 'uno',
+                        priority: 1,
+                        due_date: Date.new(2015)
+      db[:tasks].insert category_id: id,
+                        name: 'dos',
+                        priority: 2,
+                        due_date: Date.new(2015, 2)
     end
   end
+  # rubocop:enable Metrics/MethodLength
 end

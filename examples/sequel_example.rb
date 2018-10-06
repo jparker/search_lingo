@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 require 'sequel'
 require 'sqlite3'
 
@@ -17,12 +19,13 @@ require 'sqlite3'
 
 class CategoryParser # :nodoc:
   def call(token, chain)
-    if token.modifier == 'cat'
-      # This is kind of broken. The categories table will be joined once each
-      # time this parser matches a token.
-      chain.join(:categories, id: :category_id)
-        .where Sequel.qualify('categories', 'name') => token.term
-    end
+    return nil unless token.modifier == 'cat'
+
+    # This is not an ideal example. Sequel will join the categories table for
+    # each token that matches. I'm ignoring the problem since this is only an
+    # example.
+    category_name = Sequel.qualify :categories, :name
+    chain.join(:categories, id: :category_id).where category_name => token.term
   end
 end
 
@@ -57,7 +60,8 @@ class TaskSearch < SearchLingo::AbstractSearch # :nodoc:
         date = Date.parse "#{m[:y]}/#{m[:m]}/#{m[:d]}"
         chain.where due_date: date
       rescue ArgumentError
-        # Date.parse raised an ArgumentError
+        # Fail if Date.parse raises an ArgumentError
+        nil
       end
     end
   end

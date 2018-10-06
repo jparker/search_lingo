@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 require 'minitest_helper'
 require 'search_lingo'
 

@@ -1,3 +1,5 @@
+# frozen-string-literal: true
+
 require 'search_lingo/tokenizer'
 require 'minitest_helper'
 

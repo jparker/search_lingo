@@ -1,9 +1,19 @@
+# frozen-string-literal: true
+
 class Job < ActiveRecord::Base # :nodoc:
-  # Assume this model has attributes: :id, :date, :name
+  # Attributes:
+  #   :id
+  #   :date
+  #   :name
 end
 
 class Receipt < ActiveRecord::Base # :nodoc:
-  # Assume this model has attributes: :id, :check_no, :check_date, :post_date, :amount
+  # Attributes:
+  #   :id
+  #   :check_no
+  #   :check_date
+  #   :post_date
+  #   :amount
 end
 
 module Parsers # :nodoc:
@@ -13,7 +23,7 @@ module Parsers # :nodoc:
     end
 
     def call(token, chain)
-      token.match /\Aid:\s*([[:digit:]]+)\z/ do |m|
+      token.match(/\Aid:\s*([[:digit:]]+)\z/) do |m|
         chain.where @table => { id: m[1] }
       end
     end

@@ -1,7 +1,12 @@
+# frozen-string-literal: true
+
 require 'date'
 
 module SearchLingo
   module Parsers # :nodoc:
+    ##
+    # MDY provides a parser for dates that adhere to the MDY format used in the
+    # US.
     module MDY
       ##
       # Pattern for matching US-formatted date strings.
@@ -22,25 +27,30 @@ module SearchLingo
       # defaults to today's date.
       #
       # Available as both a class method and an instance method.
+      # rubocop:disable Metrics/MethodLength
       def parse(term, relative_to: Date.today)
-        term.match /\A#{US_DATE}\z/ do |m|
+        term.match(/\A#{US_DATE}\z/) do |m|
           return Date.parse "#{m[:y]}/#{m[:m]}/#{m[:d]}" if m[:y]
 
           ref   = relative_to
-          day   = Integer(m[:d])
-          month = Integer(m[:m])
+          month = Integer m[:m]
+          day   = Integer m[:d]
           year  = if month < ref.month || month == ref.month && day <= ref.day
                     ref.year
                   else
                     ref.year - 1
                   end
-
           Date.new year, month, day
         end
       rescue ArgumentError
+        # Fail if Date.parse or Date.new raise ArgumentError.
+        nil
       end
+      # rubocop:enable Metrics/MethodLength
 
+      # rubocop:disable Style/AccessModifierDeclarations:
       module_function :parse
+      # rubocop:enable Style/AccessModifierDeclarations:
     end
   end
 end

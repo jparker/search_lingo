@@ -1,4 +1,6 @@
-require "bundler/gem_tasks"
+# frozen-string-literal: true
+
+require 'bundler/gem_tasks'
 require 'rake/testtask'
 
 Rake::TestTask.new do |t|
@@ -7,3 +9,7 @@ Rake::TestTask.new do |t|
 end
 
 task default: :test
+
+task :rubocop do
+  system 'rubocop'
+end

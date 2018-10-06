@@ -1,7 +1,22 @@
+# frozen-string-literal: true
+
 require 'delegate'
 require 'search_lingo/constants'
 
 module SearchLingo
+  ##
+  # Single token from a query string. A token consists of a term an an optional
+  # modifier. The term may be a word or multiple words contained within double
+  # quotes. The modifier is one or more alphanumeric characters. The modifier
+  # and term and separated by a colon followed by zero or more whitespace
+  # characters.
+  #
+  # The following are examples of tokens:
+  #
+  #   Token.new('foo')
+  #   Token.new('"foo bar"')
+  #   Token.new('foo: bar')
+  #   Token.new('foo: "bar baz"')
   class Token < DelegateClass(String)
     ##
     # Pattern for decomposing a token into a modifier and a term.
@@ -17,7 +32,7 @@ module SearchLingo
       self[STRUCTURE, 1]
     end
 
-    alias_method :operator, :modifier
+    alias operator modifier
 
     ##
     # Returns the term portion of the token. If the term is wrapped in quotes,
@@ -36,12 +51,15 @@ module SearchLingo
     #   Token.new('foo: bar').compound? # => true
     #   Token.new('bar').compound?      # => false
     def compound?
-      !!modifier
+      !modifier.nil? && !modifier.empty?
     end
 
     def inspect # :nodoc:
-      '#<%s String(%s) modifier=%s term=%s>' %
-        [self.class, super, modifier.inspect, term.inspect]
+      format '#<%<cls>s String(%<str>s) modifier=%<mod>s term=%<term>s>',
+        cls: self.class,
+        str: super,
+        mod: modifier.inspect,
+        term: term.inspect
     end
   end
 end
