@@ -4,6 +4,7 @@ require 'search_lingo/abstract_search'
 require 'minitest_helper'
 
 module SearchLingo
+  # rubocop:disable Metrics/ClassLength
   class AbstractSearchTest < Minitest::Test # :nodoc:
     def test_query_reader
       search = AbstractSearch.new 'foo', nil
@@ -76,22 +77,16 @@ module SearchLingo
     end
     # rubocop:enable Metrics/MethodLength
 
-    # rubocop:disable Metrics/MethodLength
     def test_parse_makes_second_pass_with_simplified_token
       cls = Class.new AbstractSearch do
-        parser do |token, chain|
-          chain.foo(token) if token == 'foo:'
-        end
-        parser do |token, chain|
-          chain.bar(token) if token == 'bar'
-        end
+        parser { |token, chain| chain.foo(token) if token == 'foo:' }
+        parser { |token, chain| chain.bar(token) if token == 'bar' }
       end
       scope = mock('filter chain')
       scope.expects(:foo).with('foo:').returns(scope)
       scope.expects(:bar).with('bar').returns(scope)
       cls.new('foo: bar', scope).results
     end
-    # rubocop:enable Metrics/MethodLength
 
     def test_parse_falls_back_on_default_parse
       cls = Class.new AbstractSearch do
@@ -106,6 +101,24 @@ module SearchLingo
       cls.new('foo bar', scope).results
     end
 
+    # rubocop:disable Metrics/MethodLength
+    def test_parse_with_logging
+      cls = Class.new AbstractSearch do
+        parser { |token, chain| chain.where(token) if token == 'bar' }
+        def default_parse(token, chain)
+          chain.where(token)
+        end
+      end
+      scope = stub('filter chain')
+      scope.stubs(:where).returns(scope)
+      logger = mock('logger').tap do |m|
+        m.expects(:debug).with(regexp_matches(/default_parse token=/))
+        m.expects(:debug).with(regexp_matches(/parser:.* token=/))
+      end
+      cls.new('foo bar', scope, logger: logger).results
+    end
+    # rubocop:enable Metrics/MethodLength
+
     def test_default_parse_raises_not_implemented_error
       cls = Class.new AbstractSearch
       assert_raises(NotImplementedError) do
@@ -113,4 +126,5 @@ module SearchLingo
       end
     end
   end
+  # rubocop:enable Metrics/ClassLength
 end

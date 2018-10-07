@@ -33,7 +33,7 @@ module SearchLingo
   #     end
   #   end
   class AbstractSearch
-    attr_reader :query, :scope
+    attr_reader :query, :scope, :logger
 
     ##
     # Instantiates a new search object. +query+ is the string that is to be
@@ -42,9 +42,10 @@ module SearchLingo
     # should be sent, e.g., an +ActiveRecord::Relation+.
     #
     #   MySearchClass.new 'foo bar: baz "froz quux"', Task.all
-    def initialize(query, scope)
-      @query = query || ''
-      @scope = scope
+    def initialize(query, scope, logger: nil)
+      @query  = query || ''
+      @scope  = scope
+      @logger = logger
     end
 
     ##
@@ -98,26 +99,12 @@ module SearchLingo
     ##
     # Load search results by composing query string tokens into a query chain.
     #
-    # @query is borken down into tokens, and each token is passed through the
-    # list of defined parsers. If a parser is successful, +:match+ is thrown,
-    # processing moves on to the next token. If none of the parsers succeed and
-    # the token is compound, the token is simplified and reprocessed as before.
-    # If still no parser succeeds, fall back on +#default_parse+.
+    # @query is broken down into tokens and parses each one in turn. The
+    # results of parsing each token are chained onto the end of +scope+ to
+    # compose the query.
     def load_results
       tokenizer.reduce(scope) do |chain, token|
-        catch(:match) do
-          # 1. Try each parser with token until :match is thrown.
-          parse token, chain
-
-          # 2. If :match not thrown and token is compund, simplify and retry.
-          if token.compound?
-            token = tokenizer.simplify
-            parse token, chain
-          end
-
-          # 3. If :match still not thrown, fall back on default parser.
-          default_parse token, chain
-        end
+        parse token, chain
       end
     end
 
@@ -128,16 +115,39 @@ module SearchLingo
     end
 
     ##
+    # Passes +token+ and +chain+ through the array of parsers until +:match+ is
+    # thrown. If none of the parsers match and the token is compound,
+    # simplifies the token and reruns the parsers. If no parsers match after
+    # the second pass or if the token was not compound, falls back on
+    # `#default_parse`.
+    def parse(token, chain)
+      catch(:match) do
+        run_parsers token, chain
+
+        if token.compound?
+          token = tokenizer.simplify
+          run_parsers token, chain
+        end
+
+        logger&.debug "default_parse token=#{token.inspect}"
+        default_parse token, chain
+      end
+    end
+
+    ##
     # Passes +token+ to each parser in turn. If a parser succeeds, throws
     # +:match+ with the result.
     #
     # A parser succeeds if +call+ returns a truthy value. A successful parser
     # will typically send something to +chain+ and return the result. In this
     # way, the tokens of the search are reduced into a composed query.
-    def parse(token, chain)
+    def run_parsers(token, chain)
       parsers.each do |parser|
         result = parser.call token, chain
-        throw :match, result if result
+        if result
+          logger&.debug "parser:#{parser.inspect} token=#{token.inspect}"
+          throw :match, result
+        end
       end
       nil
     end
