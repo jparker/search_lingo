@@ -39,11 +39,7 @@ module SearchLingo
       def initialize(column, modifier: nil, &block)
         @column = column
         @prefix = /#{modifier}:[[:space:]]*/ if modifier
-        @append = if block_given?
-                    block
-                  else
-                    ->(chain) { chain }
-                  end
+        @append = block_given? ? block : ->(chain) { chain }
       end
 
       ##
@@ -63,7 +59,7 @@ module SearchLingo
         format '#<%<cls>s @prefix=%<prefix>s @column=%<column>s>',
           cls: self.class,
           prefix: prefix.inspect,
-          column: column.inspect
+          column: "#{column.relation.name}.#{column.name}".inspect
       end
 
       private
