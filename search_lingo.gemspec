@@ -4,7 +4,6 @@ lib = File.expand_path('lib', __dir__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'search_lingo/version'
 
-# rubocop:disable Metrics/BlockLength
 Gem::Specification.new do |spec|
   spec.name          = 'search_lingo'
   spec.version       = SearchLingo::VERSION
@@ -19,9 +18,9 @@ Gem::Specification.new do |spec|
   spec.homepage      = 'https://github.com/jparker/search_lingo'
   spec.license       = 'MIT'
 
-  spec.files         = `git ls-files -z`.split("\x0").reject { |f|
+  spec.files         = `git ls-files -z`.split("\x0").reject do |f|
     f.match(%r{^(test|spec|features)/})
-  }
+  end
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
@@ -40,4 +39,3 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'sequel', '~> 5.0'
   spec.add_development_dependency 'sqlite3'
 end
-# rubocop:enable Metrics/BlockLength

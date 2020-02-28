@@ -57,9 +57,9 @@ module SearchLingo
 
       def inspect # :nodoc:
         format '#<%<cls>s @prefix=%<prefix>s @column=%<column>s>',
-          cls: self.class,
-          prefix: prefix.inspect,
-          column: "#{column.relation.name}.#{column.name}".inspect
+               cls: self.class,
+               prefix: prefix.inspect,
+               column: "#{column.relation.name}.#{column.name}".inspect
       end
 
       private

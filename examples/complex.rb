@@ -40,9 +40,11 @@ class JobSearch < SearchLingo::AbstractSearch # :nodoc:
 end
 
 class ReceiptSearch < SearchLingo::AbstractSearch # :nodoc:
-  parser SearchLingo::Parsers::DateParser.new Receipt.arel_table[:check_date]
-  parser SearchLingo::Parsers::DateParser.new Receipt.arel_table[:post_date],
-    modifier: 'posted'
+  # You might prefer to include SearchLingo::Parsers if you you are going to
+  # instantiate multiple DateParsers.
+  include SearchLingo::Parsers
+  parser DateParser.new Receipt.arel_table[:check_date]
+  parser DateParser.new Receipt.arel_table[:post_date], modifier: 'posted'
 
   parser do |token, chain|
     token.match(/\Aamount: (\d+(?:\.\d+)?)\z/) do |m|

@@ -3,9 +3,9 @@
 module SearchLingo
   ##
   # Pattern for matching modifiers within a token.
-  MODIFIER = /[[:alnum:]]+/
+  MODIFIER = /[[:alnum:]]+/.freeze
 
   ##
   # Pattern for matching terms within a token.
-  TERM = /"[^"]+"|[[:graph:]]+/
+  TERM = /"[^"]+"|[[:graph:]]+/.freeze
 end

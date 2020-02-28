@@ -20,7 +20,7 @@ module SearchLingo
   class Token < DelegateClass(String)
     ##
     # Pattern for decomposing a token into a modifier and a term.
-    STRUCTURE = /\A(?:(#{MODIFIER}):[[:space:]]*)?"?(.+?)"?\z/
+    STRUCTURE = /\A(?:(#{MODIFIER}):[[:space:]]*)?"?(.+?)"?\z/.freeze
 
     ##
     # Returns the modifier portion of the token. Returns +nil+ if token does
@@ -56,10 +56,10 @@ module SearchLingo
 
     def inspect # :nodoc:
       format '#<%<cls>s String(%<str>s) modifier=%<mod>s term=%<term>s>',
-        cls: self.class,
-        str: super,
-        mod: modifier.inspect,
-        term: term.inspect
+             cls: self.class,
+             str: super,
+             mod: modifier.inspect,
+             term: term.inspect
     end
   end
 end

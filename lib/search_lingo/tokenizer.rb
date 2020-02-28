@@ -18,15 +18,15 @@ module SearchLingo
 
     ##
     # Pattern for matching a simple token (a term without a modifier).
-    SIMPLE_TOKEN   = /#{TERM}/
+    SIMPLE_TOKEN   = /#{TERM}/.freeze
 
     ##
     # Pattern for matching a compound token (a term with an optional modifier).
-    COMPOUND_TOKEN = /(?:#{MODIFIER}:[[:space:]]*)?#{TERM}/
+    COMPOUND_TOKEN = /(?:#{MODIFIER}:[[:space:]]*)?#{TERM}/.freeze
 
     ##
     # Pattern for matching the delimiter between tokens.
-    DELIMITER      = /[[:space:]]*/
+    DELIMITER      = /[[:space:]]*/.freeze
 
     def initialize(query) # :nodoc:
       @scanner = StringScanner.new query.strip

@@ -56,13 +56,11 @@ class TaskSearch < SearchLingo::AbstractSearch # :nodoc:
   # 7/4/17   => Tasks with due_date == Date.new(2017, 7, 4)
   parser do |token, chain|
     token.match %r{\A(?<m>\d{1,2})/(?<d>\d{1,2})/(?<y>\d{2}\d{2}?)\z} do |m|
-      begin
-        date = Date.parse "#{m[:y]}/#{m[:m]}/#{m[:d]}"
-        chain.where due_date: date
-      rescue ArgumentError
-        # Fail if Date.parse raises an ArgumentError
-        nil
-      end
+      date = Date.parse "#{m[:y]}/#{m[:m]}/#{m[:d]}"
+      chain.where due_date: date
+    rescue ArgumentError
+      # Fail if Date.parse raises an ArgumentError
+      nil
     end
   end
 

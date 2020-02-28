@@ -161,7 +161,7 @@ module SearchLingo
     # implementation should return +chain+. (Doing so would ignore +token+.)
     def default_parse(_token, _chain)
       raise NotImplementedError,
-        "#default_parse must be implemented by #{self.class}"
+            "#default_parse must be implemented by #{self.class}"
     end
   end
 end

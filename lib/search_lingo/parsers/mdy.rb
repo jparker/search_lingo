@@ -12,7 +12,7 @@ module SearchLingo
       # Pattern for matching US-formatted date strings.
       #
       # The year may be two or four digits, or it may be omitted.
-      US_DATE = %r{(?<m>\d{1,2})/(?<d>\d{1,2})(?:/(?<y>\d{2}\d{2}?))?}
+      US_DATE = %r{(?<m>\d{1,2})/(?<d>\d{1,2})(?:/(?<y>\d{2}\d{2}?))?}.freeze
 
       ##
       # Returns a +Date+ object for the date represented by +term+. Returns
