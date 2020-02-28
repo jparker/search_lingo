@@ -28,7 +28,7 @@ Gem::Specification.new do |spec|
 
   spec.rdoc_options += ['-x', 'examples/', '-x', 'test/']
 
-  spec.required_ruby_version = '>= 2.3'
+  spec.required_ruby_version = '>= 2.5'
 
   spec.add_development_dependency 'bundler', '~> 1.9'
   spec.add_development_dependency 'minitest'

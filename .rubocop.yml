@@ -1,6 +1,6 @@
 AllCops:
-  TargetRubyVersion: 2.3.0
-Layout/AlignParameters:
+  TargetRubyVersion: 2.5.0
+Layout/ParameterAlignment:
   Enabled: false
 Metrics/AbcSize:
   Max: 25
