@@ -11,10 +11,16 @@ module SearchLingo
       assert_equal 'foo', token.term
     end
 
-    def test_simple_token_in_quotes
+    def test_simple_quoted_token
       token = Token.new '"foo bar"'
       assert_nil token.modifier
       assert_equal 'foo bar', token.term
+    end
+
+    def test_empty_quoted_token
+      token = Token.new '""'
+      assert_nil token.modifier
+      assert_empty token.term
     end
 
     def test_compound_token
@@ -23,10 +29,16 @@ module SearchLingo
       assert_equal 'bar', token.term
     end
 
-    def test_compound_token_with_term_in_quotes
+    def test_compound_token_with_quoted_term
       token = Token.new 'foo: "bar baz"'
       assert_equal 'foo', token.modifier
       assert_equal 'bar baz', token.term
+    end
+
+    def test_compound_token_with_empty_quoted_term
+      token = Token.new 'foo: ""'
+      assert_equal 'foo', token.modifier
+      assert_empty token.term
     end
 
     def test_compound_token_with_no_space_after_modifier

@@ -20,13 +20,13 @@ module SearchLingo
   class Token < DelegateClass(String)
     ##
     # Pattern for decomposing a token into a modifier and a term.
-    STRUCTURE = /\A(?:(#{MODIFIER}):[[:space:]]*)?"?(.+?)"?\z/.freeze
+    STRUCTURE = /\A(?:(#{MODIFIER}):[[:space:]]*)?("(?:.*?)"|(?:.+))\z/.freeze
 
     ##
     # Returns the modifier portion of the token. Returns +nil+ if token does
     # not have a modifier.
     #
-    #   Token.new('foo: bar').modifier # => 'foo'
+    #   Token.new('foo: bar').modifier # => "foo"
     #   Token.new('bar').modifier      # => nil
     def modifier
       self[STRUCTURE, 1]
@@ -38,11 +38,12 @@ module SearchLingo
     # Returns the term portion of the token. If the term is wrapped in quotes,
     # they are removed.
     #
-    #   Token.new('foo: bar').term  # => 'bar'
-    #   Token.new('bar').term       # => 'bar'
-    #   Token.new('"bar baz"').term # => 'bar baz'
+    #   Token.new('foo: bar').term  # => "bar"
+    #   Token.new('bar').term       # => "bar"
+    #   Token.new('"bar baz"').term # => "bar baz"
+    #   Token.new('""').term        # => ""
     def term
-      self[STRUCTURE, 2]
+      self[STRUCTURE, 2].delete_prefix('"').delete_suffix('"')
     end
 
     ##

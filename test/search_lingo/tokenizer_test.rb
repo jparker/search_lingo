@@ -25,9 +25,19 @@ module SearchLingo
       assert_equal ['"foo bar"', '"baz"'], tokenizer.to_a
     end
 
+    def test_empty_quoted_tokens
+      tokenizer = Tokenizer.new '""'
+      assert_equal ['""'], tokenizer.to_a
+    end
+
     def test_compound_tokens
       tokenizer = Tokenizer.new 'foo: bar baz: "froz quux"'
       assert_equal ['foo: bar', 'baz: "froz quux"'], tokenizer.to_a
+    end
+
+    def test_compound_tokens_with_empty_quoted_terms
+      tokenizer = Tokenizer.new 'foo: ""'
+      assert_equal ['foo: ""'], tokenizer.to_a
     end
 
     def test_compound_tokens_without_space_after_modifier
