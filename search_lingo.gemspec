@@ -34,7 +34,7 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'minitest-focus'
   spec.add_development_dependency 'mocha'
   spec.add_development_dependency 'pry'
-  spec.add_development_dependency 'rake', '~> 10.0'
+  spec.add_development_dependency 'rake', '>= 12.3.3', '< 13'
   spec.add_development_dependency 'rubocop'
   spec.add_development_dependency 'sequel', '~> 5.0'
   spec.add_development_dependency 'sqlite3'
