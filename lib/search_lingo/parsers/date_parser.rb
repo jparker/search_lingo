@@ -16,7 +16,13 @@ module SearchLingo
     class DateParser
       include MDY
 
-      attr_reader :column, :prefix, :append
+      attr_reader :column, :prefix, :decorator
+
+      def append
+        warn 'DEPRECATION warning: #append has been renamed to #decorator ' \
+          "(called from #{caller(1..1).first})"
+        decorator
+      end
 
       ##
       # Instantiates a new DateParser object.
@@ -26,10 +32,10 @@ module SearchLingo
       # If present, the optional argument +modifier+ will be used as the
       # token operator which precedes the date term.
       #
-      # If a block is provided, it will be used to append additional methods to
-      # the filter chain. (This is useful for static methods that must be
-      # appended to the filter chain independent of the content of the token,
-      # for example, if you need to join another table.)
+      # If a block is provided, it will be called with the filter chain. This
+      # is useful if you need to send additional messages to the filter chain
+      # which are independent of the content of the token, e.g., if you need to
+      # join another table.
       #
       # DateParser.new Model.arel_table[:date]
       # DateParser.new Model.arel_table[:date], modifier: 'contract'
@@ -39,7 +45,7 @@ module SearchLingo
       def initialize(column, modifier: nil, &block)
         @column = column
         @prefix = /#{modifier}:[[:space:]]*/ if modifier
-        @append = block_given? ? block : ->(chain) { chain }
+        @decorator = block_given? ? block : ->(chain) { chain }
       end
 
       ##
@@ -67,7 +73,7 @@ module SearchLingo
       def parse_single_date(token, chain) # :nodoc:
         token.match(/\A#{prefix}(?<date>#{US_DATE})\z/) do |m|
           date = parse(m[:date]) or return nil
-          throw :halt, append.call(chain).where(column.eq(date))
+          throw :halt, decorate(chain).where(column.eq(date))
         end
       end
 
@@ -75,22 +81,26 @@ module SearchLingo
         token.match(/\A#{prefix}(?<min>#{US_DATE})-(?<max>#{US_DATE})\z/) do |m|
           min = parse(m[:min]) or return nil
           max = parse(m[:max], relative_to: min.next_year) or return nil
-          throw :halt, append.call(chain).where(column.in(min..max))
+          throw :halt, decorate(chain).where(column.in(min..max))
         end
       end
 
       def parse_lte_date(token, chain) # :nodoc:
         token.match(/\A#{prefix}-(?<date>#{US_DATE})\z/) do |m|
           date = parse(m[:date]) or return nil
-          throw :halt, append.call(chain).where(column.lteq(date))
+          throw :halt, decorate(chain).where(column.lteq(date))
         end
       end
 
       def parse_gte_date(token, chain) # :nodoc:
         token.match(/\A#{prefix}(?<date>#{US_DATE})-\z/) do |m|
           date = parse(m[:date]) or return nil
-          throw :halt, append.call(chain).where(column.gteq(date))
+          throw :halt, decorate(chain).where(column.gteq(date))
         end
+      end
+
+      def decorate(chain)
+        decorator.call chain
       end
     end
   end
