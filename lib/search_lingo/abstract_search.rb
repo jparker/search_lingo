@@ -61,8 +61,8 @@ module SearchLingo
     # responds to +#call+. The parser will be send +#call+ with a single
     # argument which will be a token from the query string.
     #
-    # If both a callable object and a block are given, or if neither a callable
-    # object nor a block are given, an +ArgumentError+ will be raised.
+    # Raises +ArgumentError+ if +parser+ does not respond to +#call+ and no
+    # block is given.
     #
     #   class MyParser
     #     def call(token)
@@ -77,11 +77,13 @@ module SearchLingo
     #     end
     #   end
     def self.parser(parser = nil, &block)
-      unless block_given? ^ parser.respond_to?(:call)
-        raise ArgumentError, 'parse must be called with callable OR block'
+      if parser.respond_to? :call
+        parsers << parser
+      elsif block_given?
+        parsers << block
+      else
+        raise ArgumentError, 'parse must be called with block or callable object'
       end
-
-      parsers << (parser || block)
     end
 
     ##

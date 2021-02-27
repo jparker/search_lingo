@@ -53,7 +53,7 @@ class SequelSearchTest < Minitest::Test # :nodoc:
 
   def connect_db
     @db = Sequel.sqlite
-    @db.loggers << Logger.new(STDOUT) if ENV['LOG_TO_STDOUT']
+    @db.loggers << Logger.new($stdout) if ENV['LOG_TO_STDOUT']
   end
 
   # rubocop:disable Metrics/MethodLength

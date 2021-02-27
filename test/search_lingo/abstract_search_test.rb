@@ -4,7 +4,6 @@ require 'search_lingo/abstract_search'
 require 'minitest_helper'
 
 module SearchLingo
-  # rubocop:disable Metrics/ClassLength
   class AbstractSearchTest < Minitest::Test # :nodoc:
     def test_query_reader
       search = AbstractSearch.new 'foo', nil
@@ -42,16 +41,7 @@ module SearchLingo
           parser
         end
       end
-      assert_equal 'parse must be called with callable OR block', err.message
-    end
-
-    def test_define_parser_with_conflicting_arguments
-      err = assert_raises(ArgumentError) do
-        Class.new(AbstractSearch) do
-          parser(->(_token, _chain) {}) { |_token, _chain| }
-        end
-      end
-      assert_equal 'parse must be called with callable OR block', err.message
+      assert_equal 'parse must be called with block or callable object', err.message
     end
 
     def test_descendents_of_abstract_class_keep_independent_lists_of_parsers
@@ -126,5 +116,4 @@ module SearchLingo
       end
     end
   end
-  # rubocop:enable Metrics/ClassLength
 end
