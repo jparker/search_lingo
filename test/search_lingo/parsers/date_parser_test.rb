@@ -32,21 +32,21 @@ module SearchLingo
 
       def test_mmddyyyy_mmddyyyy
         column = mock('column')
-        column.expects(:in).with(Date.new(2017)..Date.new(2017, 6, 30))
+        column.expects(:between).with(Date.new(2017)..Date.new(2017, 6, 30))
         parser = DateParser.new column
         parser.call '1/1/2017-6/30/2017', mock(where: nil)
       end
 
       def test_mmddyy_mmddyy
         column = mock('column')
-        column.expects(:in).with(Date.new(2017)..Date.new(2017, 6, 30))
+        column.expects(:between).with(Date.new(2017)..Date.new(2017, 6, 30))
         parser = DateParser.new column
         parser.call '1/1/17-6/30/17', mock(where: nil)
       end
 
       def test_mmdd_mmdd
         column = mock('column')
-        column.expects(:in).with(Date.new(1776, 7)..Date.new(1776, 7, 31))
+        column.expects(:between).with(Date.new(1776, 7)..Date.new(1776, 7, 31))
         Date.stub :today, Date.new(1776, 7, 4) do
           parser = DateParser.new column
           parser.call '7/1-7/31', mock(where: nil)
@@ -55,7 +55,7 @@ module SearchLingo
 
       def test_mmddyy_mmdd
         column = mock('column')
-        column.expects(:in).with(Date.new(2017, 7)..Date.new(2017, 7, 31))
+        column.expects(:between).with(Date.new(2017, 7)..Date.new(2017, 7, 31))
         Date.stub :today, Date.new(1776, 7, 4) do
           parser = DateParser.new column
           parser.call '7/1/17-7/31', mock(where: nil)
@@ -64,7 +64,7 @@ module SearchLingo
 
       def test_mmdd_mmddyy
         column = mock('column')
-        column.expects(:in).with(Date.new(1776, 7)..Date.new(2017, 7, 31))
+        column.expects(:between).with(Date.new(1776, 7)..Date.new(2017, 7, 31))
         Date.stub :today, Date.new(1776, 7, 4) do
           parser = DateParser.new column
           parser.call '7/1-7/31/17', mock(where: nil)
@@ -148,7 +148,7 @@ module SearchLingo
       def test_modifier_with_closed_date_range
         scope = stub(where: 'blerg')
         column = mock('column')
-        column.expects(:in).with(Date.new(2017, 7)..Date.new(2017, 7, 31))
+        column.expects(:between).with(Date.new(2017, 7)..Date.new(2017, 7, 31))
         parser = DateParser.new column, modifier: 'mod'
         assert_nil parser.call '7/1/2017-7/31/2017', scope
         refute_nil parser.call 'mod: 7/1/2017-7/31/2017', scope

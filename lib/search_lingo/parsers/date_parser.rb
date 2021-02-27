@@ -81,7 +81,7 @@ module SearchLingo
         token.match(/\A#{prefix}(?<min>#{US_DATE})-(?<max>#{US_DATE})\z/) do |m|
           min = parse(m[:min]) or return nil
           max = parse(m[:max], relative_to: min.next_year) or return nil
-          throw :halt, decorate(chain).where(column.in(min..max))
+          throw :halt, decorate(chain).where(column.between(min..max))
         end
       end
 
