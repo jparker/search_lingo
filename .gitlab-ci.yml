@@ -1,0 +1,22 @@
+before_script:
+  - bundle install -j "$(nproc)"
+
+build:rubocop:
+  image: "ruby:2.7"
+  script:
+    - bundle exec rubocop
+
+test:ruby-2.5:
+  image: "ruby:2.5"
+  script:
+    - bundle exec rake test
+
+test:ruby-2.6:
+  image: "ruby:2.6"
+  script:
+    - bundle exec rake test
+
+test:ruby-2.7:
+  image: "ruby:2.7"
+  script:
+    - bundle exec rake test
