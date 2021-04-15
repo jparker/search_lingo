@@ -48,9 +48,7 @@ module SearchLingo
       end
       # rubocop:enable Metrics/MethodLength
 
-      # rubocop:disable Style/AccessModifierDeclarations:
       module_function :parse
-      # rubocop:enable Style/AccessModifierDeclarations:
     end
   end
 end
