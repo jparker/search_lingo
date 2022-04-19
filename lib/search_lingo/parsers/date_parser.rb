@@ -20,7 +20,7 @@ module SearchLingo
 
       def append
         warn 'DEPRECATION warning: #append has been renamed to #decorator ' \
-          "(called from #{caller(1..1).first})"
+             "(called from #{caller(1..1).first})"
         decorator
       end
 

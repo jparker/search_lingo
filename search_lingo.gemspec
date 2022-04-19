@@ -27,7 +27,7 @@ Gem::Specification.new do |spec|
 
   spec.rdoc_options += ['-x', 'examples/', '-x', 'test/']
 
-  spec.required_ruby_version = '>= 2.5'
+  spec.required_ruby_version = '>= 2.7'
 
   spec.add_development_dependency 'bundler', '~> 2.0'
   spec.add_development_dependency 'minitest'
@@ -39,4 +39,5 @@ Gem::Specification.new do |spec|
   spec.add_development_dependency 'rubocop-minitest'
   spec.add_development_dependency 'sequel', '~> 5.0'
   spec.add_development_dependency 'sqlite3'
+  spec.metadata['rubygems_mfa_required'] = 'true'
 end

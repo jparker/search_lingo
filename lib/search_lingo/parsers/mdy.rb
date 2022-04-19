@@ -35,7 +35,7 @@ module SearchLingo
           ref   = relative_to
           month = Integer m[:m]
           day   = Integer m[:d]
-          year  = if month < ref.month || month == ref.month && day <= ref.day
+          year  = if month < ref.month || (month == ref.month && day <= ref.day)
                     ref.year
                   else
                     ref.year - 1
