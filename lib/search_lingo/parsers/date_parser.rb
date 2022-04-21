@@ -18,12 +18,6 @@ module SearchLingo
 
       attr_reader :column, :prefix, :decorator
 
-      def append
-        warn 'DEPRECATION warning: #append has been renamed to #decorator ' \
-             "(called from #{caller(1..1).first})"
-        decorator
-      end
-
       ##
       # Instantiates a new DateParser object.
       #
