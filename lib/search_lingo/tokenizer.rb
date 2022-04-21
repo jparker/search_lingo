@@ -42,7 +42,7 @@ module SearchLingo
     end
 
     ##
-    # Returns a Token for the next token in the query string. When the end of
+    # Returns a +Token+ for the next token in the query string. When the end of
     # the query string is reached raises +StopIteration+.
     def next
       scanner.skip DELIMITER
