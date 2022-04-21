@@ -16,18 +16,6 @@ module SearchLingo
     include Enumerable
     extend Forwardable
 
-    ##
-    # Pattern for matching a simple token (a term without a modifier).
-    SIMPLE_TOKEN   = /#{TERM}/.freeze
-
-    ##
-    # Pattern for matching a compound token (a term with an optional modifier).
-    COMPOUND_TOKEN = /(?:#{MODIFIER}:[[:space:]]*)?#{TERM}/.freeze
-
-    ##
-    # Pattern for matching the delimiter between tokens.
-    DELIMITER      = /[[:space:]]*/.freeze
-
     def initialize(query) # :nodoc:
       @scanner = StringScanner.new query.strip
     end
@@ -46,7 +34,7 @@ module SearchLingo
     # the query string is reached raises +StopIteration+.
     def next
       scanner.skip DELIMITER
-      token = scanner.scan COMPOUND_TOKEN
+      token = scanner.scan SIMPLE_OR_COMPOUND_TOKEN
       raise StopIteration unless token
 
       Token.new token

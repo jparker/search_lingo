@@ -19,17 +19,13 @@ module SearchLingo
   #   Token.new('foo: "bar baz"')
   class Token < DelegateClass(String)
     ##
-    # Pattern for decomposing a token into a modifier and a term.
-    STRUCTURE = /\A(?:(#{MODIFIER}):[[:space:]]*)?("(?:.*?)"|(?:.+))\z/.freeze
-
-    ##
     # Returns the modifier portion of the token. Returns +nil+ if token does
     # not have a modifier.
     #
     #   Token.new('foo: bar').modifier # => "foo"
     #   Token.new('bar').modifier      # => nil
     def modifier
-      self[STRUCTURE, 1]
+      self[SIMPLE_OR_COMPOUND_TOKEN_WITH_GROUPING, 1]
     end
 
     alias operator modifier
@@ -43,7 +39,7 @@ module SearchLingo
     #   Token.new('"bar baz"').term # => "bar baz"
     #   Token.new('""').term        # => ""
     def term
-      self[STRUCTURE, 2].delete_prefix('"').delete_suffix('"')
+      self[SIMPLE_OR_COMPOUND_TOKEN_WITH_GROUPING, 2].delete_prefix('"').delete_suffix('"')
     end
 
     ##
