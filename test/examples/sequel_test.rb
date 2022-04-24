@@ -73,6 +73,7 @@ class SequelSearchTest < Minitest::Test # :nodoc:
   end
   # rubocop:enable Metrics/MethodLength
 
+  # rubocop:disable Metrics/AbcSize
   # rubocop:disable Metrics/MethodLength
   def load_seed_data
     db[:categories].insert(name: 'english').tap do |id|
@@ -97,4 +98,5 @@ class SequelSearchTest < Minitest::Test # :nodoc:
     end
   end
   # rubocop:enable Metrics/MethodLength
+  # rubocop:enable Metrics/AbcSize
 end

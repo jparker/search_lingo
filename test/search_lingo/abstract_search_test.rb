@@ -91,6 +91,7 @@ module SearchLingo
       cls.new('foo bar', scope).results
     end
 
+    # rubocop:disable Metrics/AbcSize
     # rubocop:disable Metrics/MethodLength
     def test_parse_with_logging
       cls = Class.new AbstractSearch do
@@ -108,6 +109,7 @@ module SearchLingo
       cls.new('foo bar', scope, logger: logger).results
     end
     # rubocop:enable Metrics/MethodLength
+    # rubocop:enable Metrics/AbcSize
 
     def test_default_parse_raises_not_implemented_error
       cls = Class.new AbstractSearch
